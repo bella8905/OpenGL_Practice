@@ -27,6 +27,10 @@
     <ClInclude Include="..\00_BellaUtil\Utl_Math.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_Time.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\simple.frag" />
+    <None Include="shaders\simple.vert" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7CC98C90-5BEE-4B09-954B-3199F004342A}</ProjectGuid>
     <RootNamespace>Practice_11_19_14</RootNamespace>

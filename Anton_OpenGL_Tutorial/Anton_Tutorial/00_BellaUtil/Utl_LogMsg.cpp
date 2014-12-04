@@ -16,8 +16,7 @@ CONSOLE_SCREEN_BUFFER_INFO ColorReverter::_csbi;
 ColorReverter* ColorReverter::_instance = 0;
 
 ofstream outFile;
-const string LOG_FILE = "GL_LOG.txt";
-
+const string LOG_FILE = "log/GL_LOG.txt";
 
 ColorModifier ColorMod_Warning( COLOR_WARNING );
 ColorModifier ColorMod_Error( COLOR_ERROR );

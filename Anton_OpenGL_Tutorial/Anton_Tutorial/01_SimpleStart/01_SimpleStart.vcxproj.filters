@@ -4,6 +4,12 @@
     <Filter Include="Utl">
       <UniqueIdentifier>{d3a5411e-a77c-4912-b2b1-5491ad6d289f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{502beeb9-b7a7-4b58-a7d7-8b1664140a22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{64fd35b7-43e2-4744-b056-e2815b0415d1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\00_BellaUtil\Utl_Color.cpp">
@@ -20,6 +26,9 @@
     </ClCompile>
     <ClCompile Include="..\00_BellaUtil\Utl_Math.cpp">
       <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -44,5 +53,13 @@
     <ClInclude Include="..\00_BellaUtil\Utl_Time.h">
       <Filter>Utl</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\simple.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="shaders\simple.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
