@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Utl">
+      <UniqueIdentifier>{d3a5411e-a77c-4912-b2b1-5491ad6d289f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\00_BellaUtil\Utl_Color.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_FileStreamHandler.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_Global.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_LogMsg.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_Math.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\00_BellaUtil\Utl_Color.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_FileStreamHandler.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Global.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Include.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_LogMsg.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Math.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Time.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
