@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Utl">
-      <UniqueIdentifier>{d3a5411e-a77c-4912-b2b1-5491ad6d289f}</UniqueIdentifier>
+    <Filter Include="src">
+      <UniqueIdentifier>{4eb169a0-bedc-43f0-8d4c-110529b3147a}</UniqueIdentifier>
     </Filter>
     <Filter Include="shaders">
-      <UniqueIdentifier>{502beeb9-b7a7-4b58-a7d7-8b1664140a22}</UniqueIdentifier>
+      <UniqueIdentifier>{9607497b-1660-4ab1-8bc5-7e03a895e9d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src">
-      <UniqueIdentifier>{64fd35b7-43e2-4744-b056-e2815b0415d1}</UniqueIdentifier>
+    <Filter Include="Utl">
+      <UniqueIdentifier>{5c1e1f5a-af07-4de1-aa42-1dd18915977f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -55,14 +55,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\simple.vert">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="shaders\simple.frag">
       <Filter>shaders</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="log\GL_LOG.txt" />
+    <None Include="shaders\lookAtCam.vert">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
