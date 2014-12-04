@@ -5,4 +5,5 @@ uniform mat4 view, proj;
 
 void main() {
 	gl_Position = proj * view * vec4( vertex_position, 1.0 );
+    // gl_Position = vec4( vertex_position, 1.0 );
 }

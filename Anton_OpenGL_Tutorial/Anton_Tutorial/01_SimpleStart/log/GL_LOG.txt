@@ -1,10 +1,10 @@
-03-12-2014 09:12:24
-Renderer: GeForce GTX 760 Ti OEM/PCIe/SSE2
-OpenGL version supported 4.0.0 NVIDIA 344.75
+04-12-2014 10:33:02
+Renderer: GeForce GTX 670/PCIe/SSE2
+OpenGL version supported 4.0.0
 
 Monitors connected:
-0: Dell S2415H(HDMI), width: 1920, height: 1080.
-1: Dell P2414H(DisplayPort), width: 1080, height: 1920.
+0: Dell P2212H(Digital), width: 1920, height: 1080.
+1: Generic PnP Monitor, width: 1080, height: 1920.
 
 GL Context Params: 
 GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: 192

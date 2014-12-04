@@ -9,6 +9,7 @@
 /////////////////////////////////////////////////////////////////
 
 #include "Utl_Include.h"
+#include "Camera.h"
 
 #include <gl/glew.h>
 #define GLFW_DLL  // force it to use dynamic library, think this is fine for compling in vs
@@ -24,8 +25,8 @@ using namespace std;
 static const char* VS_FILE = "shaders/lookAtCam.vert";
 static const char* FS_FILE = "shaders/simple.frag";
 
-int gWinWidth = 640;
-int gWinHeight = 480;
+int g_winWidth = 640;
+int g_winHeight = 480;
 
 
 
@@ -111,6 +112,7 @@ void _gui_keyCallback( GLFWwindow* t_window, int t_key, int t_scancode, int t_ac
  }
 
 
+
 // GUI : AntTweakBar
 ///////////////////////////////////////////////
 
@@ -137,8 +139,8 @@ void _glfwErrorCallback( int t_error, const char* t_desc ) {
 }
 
 void _glfwWindowSizeCallback( GLFWwindow* t_win, int t_width, int t_height ) {
-    gWinWidth = t_width;
-    gWinHeight = t_height;
+    g_winWidth = t_width;
+    g_winHeight = t_height;
 
     // Send the new window size to AntTweakBar
     _gui_onResize( t_width, t_height);
@@ -419,29 +421,26 @@ GLuint _createShaderProgramByShaderFiles( const char* t_vsFile, const char* t_fs
 ///////////////////////////////////////////////
 
 
-// view matrix for a look at camera
-// camera position, camera aim point, camera up vector
-glm::mat4 _getLookAtMat( const vec3& t_camPos, const vec3& t_camAim, const vec3& t_camUp ) {
-    vec3 z = glm::normalize( t_camPos -t_camAim );
-    vec3 x = glm::normalize( glm::cross( t_camUp, z ) );
-    vec3 y = glm::cross( z, x );
 
-    // inverse of a translation matrix
-    // T(v)^-1 = T(-v)
-    mat4 T( vec4( 1.f, 0.f, 0.f, 0.f),
-            vec4( 0.f, 1.f, 0.f, 0.f ),
-            vec4( 0.f, 0.f, 1.f, 0.f ),
-            vec4( -t_camPos, 1.f ) );
+// ui callbacks
+// function called when camera pos is changed in the tweakbar
+// this function is only called when value in gui changed.
+// so we can expect some benefits than brutally update view matrix every frame
+void TW_CALL _setCameraPosCB( const void* t_value, void* t_clientData ) {
+    CSimpleCamera* cam = ( CSimpleCamera* )t_clientData;
+    if( cam == 0 )   return;
 
-    // inverse of a rotation matrix
-    // for orthonormalized matrix,
-    // T(v)^-1 = transpose( T(v) )
-    mat4 R( vec4( x.x, y.x, z.x, 0.f ),
-            vec4( x.y, y.y, z.y, 0.f ),
-            vec4( x.z, y.z, z.z, 0.f ),
-            vec4( 0.f, 0.f, 0.f, 1.f ) );
+    vec3 newPos( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
+    cam->SetPos( newPos );
 
-    return R * T;
+}
+
+// function called when we get the camera pos to show in tweakbar
+void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
+    CCamera* cam = ( CCamera* )t_clientData;
+    if( cam == 0 )    return;
+
+    memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
 }
 
 
@@ -464,7 +463,7 @@ int main()
 
     glfwWindowHint( GLFW_SAMPLES, 4 );
 
-    GLFWwindow* window = glfwCreateWindow( gWinWidth, gWinHeight, "Hello Triangle", NULL, NULL );
+    GLFWwindow* window = glfwCreateWindow( g_winWidth, g_winHeight, "Hello Triangle", NULL, NULL );
     if( !window ) {
         LogError<< "could not open GLFW window" <<LogEndl;
         glfwTerminate();
@@ -541,28 +540,18 @@ int main()
 
     // camera
     // view matrix
+    CSimpleCamera simpleCam;
     glm::vec3 camPos( 0.f, 0.f, 2.0f );
     glm::vec3 camUp( 0.f, 1.0f, 0.f );
-    glm::vec3 camAim( 0.f, 0.f, 0.f );
-
-    glm::mat4 viewMat = _getLookAtMat( camPos, camAim, camUp );
-
-    // proj matrix
-    // clip frustrum
+    glm::vec3 camTarget( 0.f, 0.f, 0.f );
+    glm::vec3 camFace = glm::normalize( camTarget - camPos );
     float clipNear = 0.1f;
     float clipFar = 100.f;
     // vertical fov
     float clipFOV = 60.f;
-    float clipAspect = ( float )gWinWidth / ( float )gWinHeight;
-    float range = tan( clipFOV * 0.5 * Utl::g_o2Pi ) * clipNear;
-    float sx = clipNear / ( range * clipAspect );
-    float sy = clipNear / range;
-    float sz = -( clipFar + clipNear ) / ( clipFar - clipNear );
-    float pz = -( 2.f * clipFar * clipNear ) / ( clipFar - clipNear );
-    glm::mat4 projMat( vec4( sx, 0.f, 0.f, 0.f ),
-                       vec4( 0.f, sy, 0.f, 0.f ),
-                       vec4( 0.f, 0.f, sz, -1.f ),
-                       vec4( 0.f, 0.f, pz, 0.f ) );
+    float clipAspect = ( float )g_winWidth / ( float )g_winHeight;
+
+    simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
 
     GLuint viewMatLoc = glGetUniformLocation( sp, "view" );
     GLuint projMatLoc = glGetUniformLocation( sp, "proj" );
@@ -570,12 +559,23 @@ int main()
 
     // twbar
     // Send the new window size to AntTweakBar
-    _gui_init( gWinWidth, gWinHeight );
-    TwBar *bar = TwNewBar( "Test Bar" );
-    TwDefine(" GLOBAL help='TEST TWBAR' ");
+    _gui_init( g_winWidth, g_winHeight );
+    TwBar *bar = TwNewBar( "bar" );
+    TwDefine( " bar label='camera properties' " );
+    TwDefine(" GLOBAL help='a simple demo for look at camera' ");
+    TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( vertexColor ), " label='vertex color' opened=true " );
 
-    TwAddVarRW( bar, "outColor", TW_TYPE_COLOR4F, glm::value_ptr( vertexColor ), " label='vertex color' opened=true " );
+    // vec struct for gui, which is mapped to a glm::vec3
+    // so we don't have to steal the DIR3F type
+    TwStructMember _tw_pos3Members[] = {
+        { "x", TW_TYPE_FLOAT, offsetof( glm::vec3, x ), " step=0.01 help='vec3[0]' " },
+        { "y", TW_TYPE_FLOAT, offsetof( glm::vec3, y ), " step=0.01 help='vec3[1]' " },
+        { "z", TW_TYPE_FLOAT, offsetof( glm::vec3, z ), " step=0.01 help='vec3[2]' " },
+    };
 
+    TwType _TW_TYPE_POS3F = TwDefineStruct( "Position", _tw_pos3Members, 3, sizeof(glm::vec3), NULL, NULL );
+    TwAddVarCB( bar, "camPos", _TW_TYPE_POS3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    
     // - Directly redirect GLFW mouse button events to AntTweakBar
     glfwSetMouseButtonCallback( window, ( GLFWmousebuttonfun )_gui_mouseButtonCallback );
     // - Directly redirect GLFW mouse position events to AntTweakBar
@@ -601,13 +601,13 @@ int main()
 
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-        glViewport( 0, 0, gWinWidth, gWinHeight );
+        glViewport( 0, 0, g_winWidth, g_winHeight );
         glUseProgram( sp );
         glBindVertexArray( vao );
 
         glUniform4fv( colorLoc, 1, glm::value_ptr( vertexColor ) );
-        glUniformMatrix4fv( viewMatLoc, 1, GL_FALSE, glm::value_ptr( viewMat ) );
-        glUniformMatrix4fv( projMatLoc, 1, GL_FALSE, glm::value_ptr( projMat ) );
+        glUniformMatrix4fv( viewMatLoc, 1, GL_FALSE, glm::value_ptr( simpleCam.GetViewMat() ) );
+        glUniformMatrix4fv( projMatLoc, 1, GL_FALSE, glm::value_ptr( simpleCam.GetProjMat() ) );
 
 
         glDrawArrays( GL_TRIANGLES, 0, 3 );
