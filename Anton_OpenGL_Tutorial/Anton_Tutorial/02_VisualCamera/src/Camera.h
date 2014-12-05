@@ -42,13 +42,6 @@ public:
 
 
 
-class CArcballCamera : public CCamera {
-public:
-    CArcballCamera() {}
-    ~CArcballCamera() {}
-};
-
-
 class CFPSCamera : public CCamera {
 public:
     CFPSCamera() {}
