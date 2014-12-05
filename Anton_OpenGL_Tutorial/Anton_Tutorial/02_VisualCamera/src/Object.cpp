@@ -1,27 +1,32 @@
-#include "CObject.h"
+#include "Object.h"
 
 
-CCObject::CCObject() : _inited( false ), _vao( 0 ), _verVBO( 0 ), _colorVBO( 0 ), _normalVBO( 0 ), _sp( 0 ) {
+CObject::CObject( CShader* t_shader ) : _inited( false ), _vao( 0 ), _verVBO( 0 ), _colorVBO( 0 ), _normalVBO( 0 ), _shader( t_shader ) {
     initModel();
 }
 
 
-CCObject::~CCObject(void)
+CObject::~CObject(void)
 {
 }
 
-void CCObject::DrawModel() {
+void CObject::DrawModel() {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
     }
 
+    _shader->BindShader();
+    glBindVertexArray( _vao );
+    glDrawArrays( GL_TRIANGLES, 0, 3 );
 
 }
 
 
 // triangle
-bool CCTriangle::initModel( const GLuint& t_linkedSP ) {
+void CTriangle::initModel() {
+    assert( _shader != 0 );
+
     _points.clear();
     _points.push_back( vec3( 0.0f, 0.5f, 0.0f ) );
     _points.push_back( vec3( 0.5f, -0.5f, 0.0f ) );
@@ -36,16 +41,15 @@ bool CCTriangle::initModel( const GLuint& t_linkedSP ) {
     glBindVertexArray( _vao );
     glBindBuffer( GL_ARRAY_BUFFER, _verVBO );
 
-    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+    glVertexAttribPointer( _shader->_attr_pos, 3, GL_FLOAT, GL_FALSE, 0, NULL );
     glEnableVertexAttribArray( 0 );
 
-    _sp = t_linkedSP;
 
     _inited = true;
 }
 
 
 // model
-bool CCModel::initModel() {
+void CModel::initModel() {
     // read from model file
 }
