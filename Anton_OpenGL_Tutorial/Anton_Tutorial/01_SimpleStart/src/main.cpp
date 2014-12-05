@@ -548,8 +548,9 @@ int main()
 
         glViewport( 0, 0, gWinWidth, gWinHeight );
         glUseProgram( sp );
-        glBindVertexArray( vao );
         glUniform4fv( colorLoc, 1, glm::value_ptr( vertexColor ) );
+        glBindVertexArray( vao );
+
         glDrawArrays( GL_TRIANGLES, 0, 3 );
 // 
 //         // split screen

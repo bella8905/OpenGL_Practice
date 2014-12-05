@@ -1,6 +1,7 @@
 #pragma once
 #include "Utl_Include.h"
 
+
 class CCamera
 {
 public:
@@ -15,6 +16,9 @@ protected:
     mat4 _viewMat, _projMat;
 
     bool _ready;
+
+public:
+    enum CamType { SIMPLE = 0, NUM_TYPES, };
 
 public:
     void Setup( const vec3& t_pos, const vec3& t_face, const vec3& t_up, const float& t_near, const float& t_far, const float &t_FOV, const float& t_aspect );

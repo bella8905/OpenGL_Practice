@@ -2,7 +2,7 @@
 
 
 CObject::CObject( CShader* t_shader ) : _inited( false ), _vao( 0 ), _verVBO( 0 ), _colorVBO( 0 ), _normalVBO( 0 ), _shader( t_shader ) {
-    initModel();
+    // initModel();
 }
 
 
@@ -27,15 +27,16 @@ void CObject::DrawModel() {
 void CTriangle::initModel() {
     assert( _shader != 0 );
 
-    _points.clear();
-    _points.push_back( vec3( 0.0f, 0.5f, 0.0f ) );
-    _points.push_back( vec3( 0.5f, -0.5f, 0.0f ) );
-    _points.push_back( vec3( -0.5f, -0.5f, 0.0f ) );
+    GLfloat points[] = {
+        0.0f, 0.5f, 0.0f, 
+        0.5f, -0.5f, 0.0f, 
+        -0.5f, -0.5f, 0.0f
+    };
 
     // generate vao and vbos
     glGenBuffers( 1, &_verVBO );
     glBindBuffer( GL_ARRAY_BUFFER, _verVBO );
-    glBufferData( GL_ARRAY_BUFFER, _points.size(), &_points[0], GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( points), points, GL_STATIC_DRAW );
 
     glGenVertexArrays( 1, &_vao );
     glBindVertexArray( _vao );

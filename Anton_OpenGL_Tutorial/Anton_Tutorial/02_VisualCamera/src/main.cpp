@@ -28,7 +28,6 @@ int g_winWidth = 640;
 int g_winHeight = 480;
 
 
-
 ///////////////////////////////////////////////
 // GUI : AntTweakBar
 // wrapper function for GLFW3 integration
@@ -296,9 +295,10 @@ int main()
     glDepthFunc( GL_LESS );
 
 
+    ////////////////////////////////////////////////////////
+    // init scenes
     // camera
     // view matrix
-    CSimpleCamera simpleCam;
     glm::vec3 camPos( 0.f, 0.f, 2.0f );
     glm::vec3 camUp( 0.f, 1.0f, 0.f );
     glm::vec3 camTarget( 0.f, 0.f, 0.f );
@@ -309,45 +309,48 @@ int main()
     float clipFOV = 60.f;
     float clipAspect = ( float )g_winWidth / ( float )g_winHeight;
 
+    CSimpleCamera simpleCam;
     simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
-
 
     // Shader 
     CPerspCamShader simpleShader( &simpleCam );
     simpleShader.BindShader();
 
     CTriangle triangle( &simpleShader );
+    
+    // init scenes
+    ////////////////////////////////////////////////////////
 
 
-//     // twbar
-//     // Send the new window size to AntTweakBar
-//     _gui_init( g_winWidth, g_winHeight );
-//     TwBar *bar = TwNewBar( "bar" );
-//     TwDefine( " bar label='camera properties' " );
-//     TwDefine(" GLOBAL help='a simple demo for look at camera' ");
-//     TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( vertexColor ), " label='vertex color' opened=true " );
-// 
-//     // vec struct for gui, which is mapped to a glm::vec3
-//     // so we don't have to steal the DIR3F type
-//     TwStructMember _tw_pos3Members[] = {
-//         { "x", TW_TYPE_FLOAT, offsetof( glm::vec3, x ), " step=0.01 help='vec3[0]' " },
-//         { "y", TW_TYPE_FLOAT, offsetof( glm::vec3, y ), " step=0.01 help='vec3[1]' " },
-//         { "z", TW_TYPE_FLOAT, offsetof( glm::vec3, z ), " step=0.01 help='vec3[2]' " },
-//     };
-// 
-//     TwType _TW_TYPE_POS3F = TwDefineStruct( "Position", _tw_pos3Members, 3, sizeof(glm::vec3), NULL, NULL );
-//     TwAddVarCB( bar, "camPos", _TW_TYPE_POS3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
-//     
-//     // - Directly redirect GLFW mouse button events to AntTweakBar
-//     glfwSetMouseButtonCallback( window, ( GLFWmousebuttonfun )_gui_mouseButtonCallback );
-//     // - Directly redirect GLFW mouse position events to AntTweakBar
-//     glfwSetCursorPosCallback( window, ( GLFWcursorposfun )_gui_mouseMoveCallback );
-//     // - Directly redirect GLFW mouse wheel events to AntTweakBar
-//     glfwSetScrollCallback( window, ( GLFWscrollfun )_gui_mouseScrollCallback );
-//     // - Directly redirect GLFW key events to AntTweakBar
-//     glfwSetKeyCallback( window, ( GLFWkeyfun )_gui_keyCallback );
-//     // - Directly redirect GLFW char events to AntTweakBar
-//     glfwSetCharCallback( window, ( GLFWcharfun )_gui_charCallback );
+    // twbar
+    // Send the new window size to AntTweakBar
+    _gui_init( g_winWidth, g_winHeight );
+    TwBar *bar = TwNewBar( "bar" );
+    TwDefine( " bar label='camera properties' " );
+    TwDefine(" GLOBAL help='a simple demo for look at camera' ");
+    TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( simpleShader._vertexColor ), " label='vertex color' opened=true " );
+
+    // vec struct for gui, which is mapped to a glm::vec3
+    // so we don't have to steal the DIR3F type
+    TwStructMember _tw_pos3Members[] = {
+        { "x", TW_TYPE_FLOAT, offsetof( glm::vec3, x ), " step=0.01 help='vec3[0]' " },
+        { "y", TW_TYPE_FLOAT, offsetof( glm::vec3, y ), " step=0.01 help='vec3[1]' " },
+        { "z", TW_TYPE_FLOAT, offsetof( glm::vec3, z ), " step=0.01 help='vec3[2]' " },
+    };
+
+    TwType _TW_TYPE_POS3F = TwDefineStruct( "Position", _tw_pos3Members, 3, sizeof(glm::vec3), NULL, NULL );
+    TwAddVarCB( bar, "camPos", _TW_TYPE_POS3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    
+    // - Directly redirect GLFW mouse button events to AntTweakBar
+    glfwSetMouseButtonCallback( window, ( GLFWmousebuttonfun )_gui_mouseButtonCallback );
+    // - Directly redirect GLFW mouse position events to AntTweakBar
+    glfwSetCursorPosCallback( window, ( GLFWcursorposfun )_gui_mouseMoveCallback );
+    // - Directly redirect GLFW mouse wheel events to AntTweakBar
+    glfwSetScrollCallback( window, ( GLFWscrollfun )_gui_mouseScrollCallback );
+    // - Directly redirect GLFW key events to AntTweakBar
+    glfwSetKeyCallback( window, ( GLFWkeyfun )_gui_keyCallback );
+    // - Directly redirect GLFW char events to AntTweakBar
+    glfwSetCharCallback( window, ( GLFWcharfun )_gui_charCallback );
 
 
     // cull back face
@@ -365,8 +368,7 @@ int main()
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
         triangle.DrawModel();
-
-        // _gui_draw();
+        _gui_draw();
 
         glfwSwapBuffers( window );
 

@@ -9,7 +9,7 @@
 // }
 
 CShader::CShader( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) : _vs( t_vs ), _gs( t_gs ), _ts( t_ts ), _fs( t_fs ), _inited( false ), _sp(0)  {
-    initSP();
+    // initSP();
 }
 
 
@@ -275,6 +275,7 @@ const std::string CPerspCamShader::_FS_FILE = "shaders/simple.frag";
 
 CPerspCamShader::CPerspCamShader( CCamera* t_cam ) : CShader( _VS_FILE, _FS_FILE ), _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
+    initSP();
 }
 
 void CPerspCamShader::initSP() {
