@@ -238,6 +238,10 @@ void _screenPrint() {
     string imagefile = g_imageFilePrefix + time + ".png";
 
     ul size = g_winHeight * g_winWidth * 3;
+
+    // dynamic memory is fine, cause we may change the viewport size
+    // or better, we can pre allocate a large enough memory 
+    // for video capture, we'd better do memory allocation first
     unsigned char* buffer = new unsigned char[ size ];
     glReadPixels( 0, 0, g_winWidth, g_winHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer );
     unsigned char* lastRow = buffer + ( g_winWidth * 3 * ( g_winHeight - 1 ) );
