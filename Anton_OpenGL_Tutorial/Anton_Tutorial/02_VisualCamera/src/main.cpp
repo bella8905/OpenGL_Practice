@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Object.h"
+#include "stb_image/stb_image_write.h"
 
 #include <GL/AntTweakBar.h>
 
@@ -21,11 +22,10 @@
 
 using namespace std;
 
-static const char* VS_FILE = "shaders/lookAtCam.vert";
-static const char* FS_FILE = "shaders/simple.frag";
-
 int g_winWidth = 640;
 int g_winHeight = 480;
+
+const string g_imageFilePrefix = "images/screenshot_"; 
 
 
 ///////////////////////////////////////////////
@@ -54,12 +54,9 @@ void _gui_onResize( int t_winWidth, int t_winHeight ) {
 
 // carefully not using old GLFW2 functions in library
 // https://gist.github.com/roxlu/8170860/download#
-void _gui_onMouseMoved( double t_x, double t_y ) {
-    TwMouseMotion( ( int )t_x, ( int )t_y );
-}
 
 void _gui_onMouseClicked( int t_bt, int t_action ) {
-    TwMouseButtonID btn = ( t_bt == 0 ) ? TW_MOUSE_LEFT : TW_MOUSE_RIGHT;
+    TwMouseButtonID btn = ( t_bt == GLFW_MOUSE_BUTTON_LEFT ) ? TW_MOUSE_LEFT : ( ( t_bt == GLFW_MOUSE_BUTTON_RIGHT ) ? TW_MOUSE_RIGHT : TW_MOUSE_MIDDLE );
     TwMouseAction ma = ( t_action == GLFW_PRESS ) ? TW_MOUSE_PRESSED : TW_MOUSE_RELEASED;
     TwMouseButton( ma, btn );
 }
@@ -71,6 +68,8 @@ void _gui_onKeyPressed( int t_key, int t_mod ) {
     case GLFW_KEY_RIGHT: t_key = TW_KEY_RIGHT; break;
     case GLFW_KEY_UP: t_key = TW_KEY_UP; break;
     case GLFW_KEY_DOWN: t_key = TW_KEY_DOWN; break;
+//     case GLFW_KEY_BACKSPACE: t_key = TW_KEY_BACKSPACE; break;
+//     case GLFW_KEY_ENTER: t_key = TW_KEY_RETURN; break;
     default: break;
     }
 
@@ -85,8 +84,11 @@ void _gui_onKeyPressed( int t_key, int t_mod ) {
         tw_mod |= TW_KMOD_ALT;
     }
     
-    TwKeyPressed( t_key, tw_mod );
-
+    // this one is disaster
+    // should come back later and read the library code
+    // but for now, keep it as the minimal function
+    TwEventKeyGLFW( t_key, tw_mod );
+    // TwKeyPressed( t_key, tw_mod );   // react multiple times ..
 }
 
 void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, int t_mods ) {
@@ -94,11 +96,11 @@ void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, in
 }
 
 void _gui_mouseMoveCallback( GLFWwindow* t_window, double t_x, double t_y ) {
-    _gui_onMouseMoved( t_x, t_y );
+    TwEventMousePosGLFW( ( int )t_x, ( int )t_y );
 }
 
 void _gui_mouseScrollCallback( GLFWwindow* t_window, double t_xoffset, double t_yoffset ) {
-    TwMouseWheel( ( int )t_yoffset );
+    TwEventMouseWheelGLFW( ( int )t_yoffset );
 }
 
 void _gui_keyCallback( GLFWwindow* t_window, int t_key, int t_scancode, int t_action, int t_mods ) {
@@ -229,6 +231,22 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
     memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
 }
 
+
+// screen capture
+void _screenPrint() {
+    string time = Utl::GetTime( Utl::TIME_STAMP_FILE_NAME );
+    string imagefile = g_imageFilePrefix + time + ".png";
+
+    ul size = g_winHeight * g_winWidth * 3;
+    unsigned char* buffer = new unsigned char[ size ];
+    glReadPixels( 0, 0, g_winWidth, g_winHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer );
+    unsigned char* lastRow = buffer + ( g_winWidth * 3 * ( g_winHeight - 1 ) );
+    if( !stbi_write_png( imagefile.c_str(), g_winWidth, g_winHeight , 3, lastRow, -3 * g_winWidth ) ) {
+        LogError<<"can't write to image"<<LogEndl;
+    }
+
+    delete[] buffer;
+}
 
 int main()
 {
@@ -376,6 +394,9 @@ int main()
         glfwPollEvents();
         if( GLFW_PRESS == glfwGetKey( window, GLFW_KEY_ESCAPE ) ) { 
             glfwSetWindowShouldClose( window, 1 ); 
+        }
+        if( GLFW_PRESS == glfwGetKey( window, GLFW_KEY_F11 ) ) {
+            _screenPrint();
         }
 
     }

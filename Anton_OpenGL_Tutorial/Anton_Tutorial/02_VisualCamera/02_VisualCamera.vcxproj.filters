@@ -39,6 +39,12 @@
     <ClCompile Include="src\Object.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image.c">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image_write.c">
+      <Filter>Utl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\00_BellaUtil\Utl_Color.h">
@@ -70,6 +76,12 @@
     </ClInclude>
     <ClInclude Include="src\Object.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h">
+      <Filter>Utl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

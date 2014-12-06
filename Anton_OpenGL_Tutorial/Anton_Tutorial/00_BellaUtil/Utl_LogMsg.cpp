@@ -31,7 +31,7 @@ ColorCout LogMsg;
 ColorEndl LogEndl;
 
 static void _initFileOutput();
-static string _getCurrentTime();
+// static string GetCurrentTime();
 
 std::ostream& operator<<( std::ostream& os, const ColorModifier& mod) {
 #ifdef _WIN32
@@ -85,7 +85,7 @@ static void _initFileOutput()
         }
 
         // write time info
-        string time = _getCurrentTime();
+        string time = Utl::GetTime();
         outFile<<time<<'\n';
     }
 }
@@ -106,12 +106,12 @@ ColorEndl::ColorEndl()
 }
 
 
-static string _getCurrentTime()
-{
-    time_t rawTime = time( 0 );
-    tm timeInfo;
-    localtime_s( &timeInfo, &rawTime );
-    char buffer[80];
-    strftime(buffer,80,"%d-%m-%Y %I:%M:%S", &timeInfo);
-    return string( buffer );
-}
+// static string GetCurrentTime()
+// {
+//     time_t rawTime = time( 0 );
+//     tm timeInfo;
+//     localtime_s( &timeInfo, &rawTime );
+//     char buffer[80];
+//     strftime(buffer,80,"%d-%m-%Y %I:%M:%S", &timeInfo);
+//     return string( buffer );
+// }

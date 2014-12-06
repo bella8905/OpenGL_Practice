@@ -67,6 +67,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image.c" />
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image_write.c" />
     <ClCompile Include="..\00_BellaUtil\Utl_Color.cpp" />
     <ClCompile Include="..\00_BellaUtil\Utl_FileStreamHandler.cpp" />
     <ClCompile Include="..\00_BellaUtil\Utl_Global.cpp" />
@@ -78,6 +80,8 @@
     <ClCompile Include="src\Shader.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image.h" />
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_Color.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_FileStreamHandler.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_Global.h" />

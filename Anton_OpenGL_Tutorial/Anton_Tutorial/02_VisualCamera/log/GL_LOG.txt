@@ -1,4 +1,4 @@
-05-12-2014 01:40:06
+05-12-2014 04:40:28
 Renderer: GeForce GTX 670/PCIe/SSE2
 OpenGL version supported 4.0.0
 
