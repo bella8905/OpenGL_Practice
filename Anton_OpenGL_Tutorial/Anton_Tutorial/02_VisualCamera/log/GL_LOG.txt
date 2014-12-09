@@ -1,12 +1,10 @@
-<<<<<<< HEAD
-=======
-08-12-2014 05:00:18
-Renderer: GeForce GTX 670/PCIe/SSE2
-OpenGL version supported 4.0.0
+08-12-2014 09:01:09
+Renderer: GeForce GTX 760 Ti OEM/PCIe/SSE2
+OpenGL version supported 4.0.0 NVIDIA 344.75
 
 Monitors connected:
-0: Dell P2212H(Digital), width: 1920, height: 1080.
-1: Generic PnP Monitor, width: 1080, height: 1920.
+0: Dell S2415H(HDMI), width: 1920, height: 1080.
+1: Dell P2414H(DisplayPort), width: 1080, height: 1920.
 
 GL Context Params: 
 GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS: 192
@@ -15,7 +13,6 @@ GL_MAX_DRAW_BUFFERS: 8
 GL_MAX_FRAGMENT_UNIFORM_COMPONENTS: 2048
 GL_MAX_TEXTURE_IMAGE_UNITS: 32
 GL_MAX_TEXTURE_SIZE: 16384
-GL_MAX_VARYING_FLOATS: 0
 GL_MAX_VERTEX_ATTRIBS: 16
 GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS: 32
 GL_MAX_VERTEX_UNIFORM_COMPONENTS: 4096
@@ -31,4 +28,3 @@ program 3 GL_VALIDATE_STATUS = 1
    1 meshes
    0 textures
    208353 vertices in mesh[0]
->>>>>>> origin/master
