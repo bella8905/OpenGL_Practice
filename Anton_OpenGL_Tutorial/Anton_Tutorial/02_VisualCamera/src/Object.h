@@ -16,14 +16,16 @@ public:
 
 protected:
     bool _inited;
-    GLuint _vao, _verVBO, _colorVBO, _normalVBO; 
+    GLuint _vao;
     CShader* _shader;
+    glm::mat4 _modelMat;
 
 protected:
-    virtual void initModel() = 0;
+    virtual bool initModel() = 0;
 
 public:
-    void DrawModel();
+    virtual void DrawModel() = 0;
+    bool IsInited() { return _inited; }
 
 };
 
@@ -35,7 +37,10 @@ public:
     ~CTriangle() {}
 
 protected:
-    void initModel();
+    bool initModel();
+
+public:
+    virtual void DrawModel();
 };
 
 
@@ -47,7 +52,11 @@ public:
 
 protected:
     string _fileName;
+    int _numOfVertices;
 
 protected:
-    void initModel();
+    bool initModel();
+
+public:
+    virtual void DrawModel();
 };
