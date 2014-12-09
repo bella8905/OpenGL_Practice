@@ -27,8 +27,10 @@ using namespace std;
 int g_winWidth = 640;
 int g_winHeight = 480;
 
+bool g_drawWireModel = false;
+
 const string g_imageFilePrefix = "images/screenshot_"; 
-const string g_model_sphere = "../models/bun_zipper.ply";
+const string g_model_sphere = "../models/sphere.dae";
 
 
 ///////////////////////////////////////////////
@@ -48,7 +50,18 @@ void _gui_deinit() {
 }
 
 void _gui_draw() {
+    // don't let the wire thing affect menu
+    if( g_drawWireModel ) {
+        glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+        glEnable( GL_CULL_FACE );
+    }
+
     TwDraw();
+
+    if( g_drawWireModel ) {
+        glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        glDisable( GL_CULL_FACE );
+    }
 }
 
 void _gui_onResize( int t_winWidth, int t_winHeight ) {
@@ -329,6 +342,22 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
     memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
 }
 
+void TW_CALL _setWireModeCB(  const void* t_value, void* t_clientData ) {
+    g_drawWireModel = *(bool*)t_value;
+    if( g_drawWireModel ) {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glDisable( GL_CULL_FACE ); 
+    }
+    else {
+        // cull back face
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable( GL_CULL_FACE ); 
+    }
+}
+
+void TW_CALL _getWireModeCB(  void* t_value, void* t_clientData ) {
+    *(bool*)t_value = g_drawWireModel;
+}
 
 // screen capture
 void _screenPrint() {
@@ -450,6 +479,7 @@ int main()
     TwBar *bar = TwNewBar( "bar" );
     TwDefine( " bar label='camera properties' " );
     TwDefine(" GLOBAL help='a simple demo for look at camera' ");
+    TwAddVarCB( bar, "wire", TW_TYPE_BOOL32, _setWireModeCB, _getWireModeCB, 0,  " label='Wireframe' help='Toggle wireframe display mode.' ");
     TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( simpleShader._vertexColor ), " label='vertex color' opened=true " );
 
     // vec struct for gui, which is mapped to a glm::vec3
@@ -475,14 +505,10 @@ int main()
     glfwSetCharCallback( window, ( GLFWcharfun )_gui_charCallback );
 
 
-    // cull back face
-    glEnable( GL_CULL_FACE ); 
+    // _printSPInfo( sp );
+
     glCullFace( GL_BACK );
     glFrontFace( GL_CW );
-
-
-
-    // _printSPInfo( sp );
 
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
@@ -493,6 +519,7 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
         // triangle.DrawModel();
         sphere.DrawModel();
+
         _gui_draw();
 
         glfwSwapBuffers( window );

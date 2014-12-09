@@ -22,17 +22,16 @@ bool CTriangle::initModel() {
 
     _inited = false;
 
-    GLfloat points[] = {
-        0.0f, 0.5f, 0.0f, 
-        0.5f, -0.5f, 0.0f, 
-        -0.5f, -0.5f, 0.0f
-    };
+    vector<vec3> points;
+    points.push_back( vec3( 0.0f, 0.5f, 0.0f ) );
+    points.push_back( vec3( 0.5f, -0.5f, 0.0f ) );
+    points.push_back( vec3( -0.5f, -0.5f, 0.0f ) );
 
     GLuint vbo;
     // generate vao and vbos
     glGenBuffers( 1, &vbo );
     glBindBuffer( GL_ARRAY_BUFFER, vbo );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( points), points, GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, 9 * sizeof( float ), &points[0], GL_STATIC_DRAW );
 
     glGenVertexArrays( 1, &_vao );
     glBindVertexArray( _vao );
@@ -66,7 +65,7 @@ bool CModel::initModel() {
     // read from model file
     // do it in a c++ way
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile( _fileName, aiProcess_Triangulate );
+    const aiScene* scene = importer.ReadFile( _fileName, aiProcess_Triangulate/* | aiProcess_JoinIdenticalVertices*/ );
 
     if( !scene ) {
         LogError<<"can't read model: "<< _fileName <<LogEndl;
@@ -86,81 +85,86 @@ bool CModel::initModel() {
     // keep track of the first vertex index for each mesh for drawing
     int meshIndex = 0;
     const aiMesh* mesh = scene->mMeshes[meshIndex];
-    _numOfVertices = mesh->mNumVertices;
-    LogMsg<<"   "<< _numOfVertices <<" vertices in mesh["<<meshIndex<<"]"<<LogEndl;
+    int numOfVertices = mesh->mNumVertices;
+    LogMsg<<"   "<< numOfVertices <<" vertices in mesh["<<meshIndex<<"]"<<LogEndl;
 
-    GLfloat* points = 0;
-    GLfloat* normals = 0;
-    GLfloat* texcoords = 0;
 
     glGenVertexArrays( 1, &_vao );
     glBindVertexArray( _vao );
 
 
     if( mesh->HasPositions() ) {
-        points = new GLfloat[ _numOfVertices * 3 ];
-        for( int i = 0; i < _numOfVertices; ++i )
+        vector<GLfloat> points;
+        for( int i = 0; i < numOfVertices; ++i )
         {
             const aiVector3D* point = &( mesh->mVertices[ i ] );
-            points[ i * 3 ] = ( GLfloat )point->x;
-            points[ i * 3 + 1 ] = ( GLfloat )point->y;
-            points[ i * 3 + 2 ] = ( GLfloat )point->z;
+            points.push_back( ( GLfloat )point->x );
+            points.push_back( ( GLfloat )point->y );
+            points.push_back( ( GLfloat )point->z );
         }
         
 
         GLuint vbo;
         glGenBuffers( 1, &vbo );
         glBindBuffer( GL_ARRAY_BUFFER, vbo );
-        glBufferData( GL_ARRAY_BUFFER, 3 * _numOfVertices * sizeof( GLfloat ), points, GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, 3 * numOfVertices * sizeof( GLfloat ), &points[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
         glEnableVertexAttribArray( 0 );
 
-        delete[] points;
-        points = 0;
     }
     if( mesh->HasNormals() ) {
-        normals = new GLfloat[ _numOfVertices * 3 ];
-        for( int i = 0; i < _numOfVertices; ++i )
+        vector<GLfloat> normals;
+        for( int i = 0; i < numOfVertices; ++i )
         {
             const aiVector3D* normal = &( mesh->mNormals[ i ] );
-            normals[ i * 3 ] = ( GLfloat )normal->x;
-            normals[ i * 3 + 1 ] = ( GLfloat )normal->y;
-            normals[ i * 3 + 2 ] = ( GLfloat )normal->z;
+            normals.push_back( ( GLfloat )normal->x );
+            normals.push_back( ( GLfloat )normal->y );
+            normals.push_back( ( GLfloat )normal->z );
         }
 
 
         GLuint vbo;
         glGenBuffers( 1, &vbo );
         glBindBuffer( GL_ARRAY_BUFFER, vbo );
-        glBufferData( GL_ARRAY_BUFFER, 3 * _numOfVertices * sizeof( GLfloat ), normals, GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, 3 * numOfVertices * sizeof( GLfloat ), &normals[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, NULL );
         glEnableVertexAttribArray( 1 );
-
-        delete[] normals;
-        normals = 0;
     }
 
     // a vertex can have a number of textures bound. 
     // we are only using the first one
     if( mesh->HasTextureCoords( 0 ) ) {
-        texcoords = new GLfloat[ _numOfVertices * 2 ];
-        for( int i = 0; i < _numOfVertices; ++i )
+        vector<GLfloat> texcoords;
+        for( int i = 0; i < numOfVertices; ++i )
         {
             const aiVector3D* point = &( mesh->mTextureCoords[ 0 ][ i ] );
-            texcoords[ i * 2 ] = ( GLfloat )point->x;
-            texcoords[ i * 2 + 1 ] = ( GLfloat )point->y;
+            texcoords.push_back( ( GLfloat )point->x );
+            texcoords.push_back( ( GLfloat )point->y );
         }
 
 
         GLuint vbo;
         glGenBuffers( 1, &vbo );
         glBindBuffer( GL_ARRAY_BUFFER, vbo );
-        glBufferData( GL_ARRAY_BUFFER, 3 * _numOfVertices * sizeof( GLfloat ), texcoords, GL_STATIC_DRAW );
+        glBufferData( GL_ARRAY_BUFFER, 2 * numOfVertices * sizeof( GLfloat ), &texcoords[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, NULL );
         glEnableVertexAttribArray( 2 );
+    }
 
-        delete[] texcoords;
-        texcoords = 0;
+    if( mesh->HasFaces() ) {
+        vector<GLuint> indices;
+        for( unsigned int i = 0; i < mesh->mNumFaces; ++i ) {
+            const aiFace* face = &( mesh->mFaces[ i ] );
+            for( unsigned int j = 0; j < face->mNumIndices; ++j ) {
+                indices.push_back( face->mIndices[ j ] );
+            }
+        }
+
+        _numOfIndices = indices.size();
+        GLuint ibo;
+        glGenBuffers( 1, &ibo );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, ibo );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &indices[0], GL_STATIC_DRAW );
     }
 
     _inited = true;
@@ -175,5 +179,5 @@ void CModel::DrawModel() {
 
     _shader->BindShader();
     glBindVertexArray( _vao );
-    glDrawArrays( GL_TRIANGLES, 0, _numOfVertices );
+    glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
 }

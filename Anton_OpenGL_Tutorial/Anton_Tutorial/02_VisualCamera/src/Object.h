@@ -52,7 +52,7 @@ public:
 
 protected:
     string _fileName;
-    int _numOfVertices;
+    int _numOfIndices;
 
 protected:
     bool initModel();
