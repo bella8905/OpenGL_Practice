@@ -120,6 +120,102 @@ void _glfwErrorCallback( int t_error, const char* t_desc ) {
     LogError<<"GLFW ERROR: code "<<t_error<<" msg: "<<t_desc<<LogEndl;
 }
 
+/*
+// NOT USE KHR_DEBUG MESSAGE FOR NOW. LEARN TO FILTER .. :(
+void debug_gl_callback (
+    unsigned int source,
+    unsigned int type,
+    unsigned int id,
+    unsigned int severity,
+    int length,
+    const char* message,
+    void* userParam
+    ) {
+        string src_str; 
+        string type_str;
+        string sev_str; 
+
+        switch (source) {
+        case 0x8246:
+            src_str = "API";
+            break;
+        case 0x8247:
+            src_str = "WINDOW_SYSTEM";
+            break;
+        case 0x8248:
+            src_str = "SHADER_COMPILER";
+            break;
+        case 0x8249:
+            src_str = "THIRD_PARTY";
+            break;
+        case 0x824A:
+            src_str = "APPLICATION";
+            break;
+        case 0x824B:
+            src_str = "OTHER";
+            break;
+        default:
+            src_str = "undefined";
+            break;
+        }
+
+        switch (type) {
+        case 0x824C:
+            type_str = "ERROR";
+            break;
+        case 0x824D:
+            type_str = "DEPRECATED_BEHAVIOR";
+            break;
+        case 0x824E:
+            type_str = "UNDEFINED_BEHAVIOR";
+            break;
+        case 0x824F:
+            type_str = "PORTABILITY";
+            break;
+        case 0x8250:
+            type_str = "PERFORMANCE";
+            break;
+        case 0x8251:
+            type_str = "OTHER";
+            break;
+        case 0x8268:
+            type_str = "MARKER";
+            break;
+        case 0x8269:
+            type_str = "PUSH_GROUP";
+            break;
+        case 0x826A:
+            type_str = "POP_GROUP";
+            break;
+        default:
+            type_str = "undefined";
+            break;
+        }
+
+        switch (severity) {
+        case 0x9146:
+            sev_str = "HIGH";
+            break;
+        case 0x9147:
+            sev_str = "MEDIUM";
+            break;
+        case 0x9148:
+            sev_str = "LOW";
+            break;
+        case 0x826B:
+            sev_str = "NOTIFICATION";
+            break;
+        default:
+            sev_str = "undefined";
+            break;
+        }
+
+        ostringstream oss;
+        oss<<"source "<<src_str<<" type: "<<type_str<<" id: "<<id<<" severity: "<<sev_str<<" length: "<<length<<" message: "<<message<<" userParam: "<<userParam;
+        LogError<<oss.str()<<LogEndl;
+}
+*/
+
 void _glfwWindowSizeCallback( GLFWwindow* t_win, int t_width, int t_height ) {
     g_winWidth = t_width;
     g_winHeight = t_height;
@@ -127,8 +223,6 @@ void _glfwWindowSizeCallback( GLFWwindow* t_win, int t_width, int t_height ) {
     // Send the new window size to AntTweakBar
     _gui_onResize( t_width, t_height);
 }
-
-
 
 
 void _logGLParams() {
@@ -148,8 +242,9 @@ void _logGLParams() {
         { GL_MAX_FRAGMENT_UNIFORM_COMPONENTS,   "GL_MAX_FRAGMENT_UNIFORM_COMPONENTS",   SINGLE_INT },
         { GL_MAX_TEXTURE_IMAGE_UNITS,           "GL_MAX_TEXTURE_IMAGE_UNITS",           SINGLE_INT },
         { GL_MAX_TEXTURE_SIZE,                  "GL_MAX_TEXTURE_SIZE",                  SINGLE_INT },
-        // Varying floats are those sent from the vertex shader to the fragment shaders. Usually
-        { GL_MAX_VARYING_FLOATS,                "GL_MAX_VARYING_FLOATS",                SINGLE_INT },
+        // Varying floats are those sent from the vertex shader to the fragment shaders. 
+        // NOT SURE WHY VARYING_FLOATS IS INVALID ENUM ON MY DESKTOP. TRY IT LATER SOMEWHERE ELSE
+        // { GL_MAX_VARYING_FLOATS,                "GL_MAX_VARYING_FLOATS",                SINGLE_INT },
         { GL_MAX_VERTEX_ATTRIBS,                "GL_MAX_VERTEX_ATTRIBS",                SINGLE_INT },
         { GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,    "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS",    SINGLE_INT },
         { GL_MAX_VERTEX_UNIFORM_COMPONENTS,     "GL_MAX_VERTEX_UNIFORM_COMPONENTS",     SINGLE_INT },
@@ -268,7 +363,6 @@ int main()
     glfwWindowHint( GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE );
     // mark functions deprecation
     glfwWindowHint( GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE );
-
     glfwWindowHint( GLFW_SAMPLES, 4 );
 
     GLFWwindow* window = glfwCreateWindow( g_winWidth, g_winHeight, "Hello Triangle", NULL, NULL );
@@ -379,6 +473,8 @@ int main()
     glEnable( GL_CULL_FACE ); 
     glCullFace( GL_BACK );
     glFrontFace( GL_CW );
+
+
 
     // _printSPInfo( sp );
 
