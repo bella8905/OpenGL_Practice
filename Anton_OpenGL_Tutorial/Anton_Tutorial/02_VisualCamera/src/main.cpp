@@ -13,6 +13,8 @@
 #include "Shader.h"
 #include "Object.h"
 #include "stb_image/stb_image_write.h"
+#include "assimp/scene.h"
+
 
 #include <GL/AntTweakBar.h>
 
@@ -26,6 +28,7 @@ int g_winWidth = 640;
 int g_winHeight = 480;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
+const string g_model_sphere = "../models/bun_zipper.ply";
 
 
 ///////////////////////////////////////////////
@@ -339,6 +342,9 @@ int main()
     simpleShader.BindShader();
 
     CTriangle triangle( &simpleShader );
+   
+    CModel sphere(  &simpleShader, g_model_sphere );
+    
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -389,7 +395,8 @@ int main()
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
-        triangle.DrawModel();
+        // triangle.DrawModel();
+        sphere.DrawModel();
         _gui_draw();
 
         glfwSwapBuffers( window );

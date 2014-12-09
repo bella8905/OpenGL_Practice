@@ -1,4 +1,4 @@
-05-12-2014 04:40:28
+08-12-2014 05:00:18
 Renderer: GeForce GTX 670/PCIe/SSE2
 OpenGL version supported 4.0.0
 
@@ -21,3 +21,11 @@ GL_MAX_VIEWPORT_DIMS: 16384 16384
 GL_STEREO: 0
 
 program 3 GL_VALIDATE_STATUS = 1
+***************Model loaded: ../models/bun_zipper.ply
+   0 animations
+   0 cameras
+   0 lights
+   1 materials
+   1 meshes
+   0 textures
+   208353 vertices in mesh[0]
