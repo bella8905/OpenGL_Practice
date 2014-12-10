@@ -352,11 +352,16 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
 }
 
 void TW_CALL _setObjScaleCB( const void* t_value, void* t_clientData  ) {
-    CObject* obj = ( CObject* )t_clientData;
-    if( obj == 0 )   return;
+    if( g_selObj == 0 )   return;
 
     vec3 newScale( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
-    obj->SetScales( newScale );
+    g_selObj->SetScales( newScale );
+}
+
+void TW_CALL _getObjScaleCB( void* t_value, void* t_clientData  ) {
+    if( g_selObj == 0 )  return;
+
+    memcpy( t_value, &( g_selObj->GetScales().x ), 3 * sizeof( float ) );
 }
 
 
@@ -370,12 +375,7 @@ void TW_CALL _setObjCB( const void* t_value, void* t_clientData  ) {
     g_selObj = objs[ g_selObjType ];
 }
 
-void TW_CALL _getObjScaleCB( void* t_value, void* t_clientData  ) {
-    CObject* obj = ( CObject* )t_clientData;
-    if( obj == 0 )  return;
 
-    memcpy( t_value, &( obj->GetScales().x ), 3 * sizeof( float ) );
-}
 
 void TW_CALL _setWireModeCB(  const void* t_value, void* t_clientData ) {
     g_drawWireModel = *(bool*)t_value;
@@ -544,7 +544,7 @@ int main()
     TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
     // model
-    TwAddVarCB( bar, "object", _TW_TYPE_VEC3F, _setObjScaleCB, _getObjScaleCB, ( void* )( g_selObj ),  " label='selected object scales' opened=true help='selected object scales' ");
+    TwAddVarCB( bar, "object", _TW_TYPE_VEC3F, _setObjScaleCB, _getObjScaleCB, 0,  " label='selected object scales' opened=true help='selected object scales' ");
     // camera  pos   
     TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
     
