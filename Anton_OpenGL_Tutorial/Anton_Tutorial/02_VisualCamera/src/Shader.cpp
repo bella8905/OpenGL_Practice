@@ -3,6 +3,7 @@
 #include <streambuf>
 
 #include "Shader.h"
+#include "Object.h"
 #include "Utl_Include.h"
 
 // CShader::CShader( const std::string& t_vs, const std::string& t_fs ) : CShader(  t_vs, "", "", t_fs ) {
@@ -287,7 +288,8 @@ void CPerspCamShader::initSP() {
     _uni_inputColorLoc = glGetUniformLocation( _sp, "inputColor" );
     _uni_viewMatLoc = glGetUniformLocation( _sp, "view" );
     _uni_projMatLoc = glGetUniformLocation( _sp, "proj" );
-    assert( _uni_inputColorLoc >= 0 && _uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 );
+    _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
+    assert( _uni_inputColorLoc >= 0 && _uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc );
 
     // attributes
     _attr_pos = 0;
@@ -295,16 +297,19 @@ void CPerspCamShader::initSP() {
     _inited = true;
 }
 
-void CPerspCamShader::BindShader() {
+void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
 
     if( !_inited ) {
         LogError<<"shader not inited"<<LogEndl;
         return;
     }
 
+    assert( t_object  );
+
     CShader::BindShader();
 
     glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
     glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetViewMat() ) );
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
+    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_object->GetModelMat() ) );
 }

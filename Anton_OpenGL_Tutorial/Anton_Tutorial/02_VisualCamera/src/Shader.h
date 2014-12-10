@@ -3,6 +3,8 @@
 #include <string>
 #include "Camera.h"
 
+class CObject;
+
 class CShader
 {
 public:
@@ -35,7 +37,7 @@ public:
     GLuint _attr_pos;
 
 public:
-    virtual void BindShader();
+    void BindShader();
 };
 
 
@@ -47,7 +49,7 @@ public:
 
 public:
     // uniform variable names
-    GLint _uni_inputColorLoc, _uni_viewMatLoc, _uni_projMatLoc;
+    GLint _uni_inputColorLoc, _uni_viewMatLoc, _uni_projMatLoc, _uni_modelMatLoc;
 
     vec4 _vertexColor;
 
@@ -61,5 +63,5 @@ protected:
     virtual void initSP();
 
 public:
-    virtual void BindShader();
+    virtual void BindShaderWithObject( CObject* t_object );
 };

@@ -31,7 +31,13 @@ bool g_drawWireModel = false;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
 const string g_model_sphere = "../models/sphere.dae";
+const string g_model_spider = "../models/spider/spider.obj";
 
+enum ObjType { OBJ_TRIANGLE = 0, OBJ_SPIDER, OBJ_SPHERE };
+const us NUM_OF_OBJ = 3;
+ObjType g_selObjType = OBJ_SPHERE;
+CObject* objs[ NUM_OF_OBJ ];
+CObject* g_selObj = 0;
 
 ///////////////////////////////////////////////
 // GUI : AntTweakBar
@@ -319,6 +325,9 @@ void _updateFPSCounter( GLFWwindow* t_window ) {
     frameCount++;
 }
 
+void _initObjs() {
+
+}
 
 
 // ui callbacks
@@ -340,6 +349,32 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
     if( cam == 0 )    return;
 
     memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
+}
+
+void TW_CALL _setObjScaleCB( const void* t_value, void* t_clientData  ) {
+    CObject* obj = ( CObject* )t_clientData;
+    if( obj == 0 )   return;
+
+    vec3 newScale( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
+    obj->SetScales( newScale );
+}
+
+
+void TW_CALL _getObjCB( void* t_value, void* t_clientData  ) {
+    *( ObjType* )t_value = g_selObjType;
+}
+
+
+void TW_CALL _setObjCB( const void* t_value, void* t_clientData  ) {
+    g_selObjType = *( ObjType* )t_value;
+    g_selObj = objs[ g_selObjType ];
+}
+
+void TW_CALL _getObjScaleCB( void* t_value, void* t_clientData  ) {
+    CObject* obj = ( CObject* )t_clientData;
+    if( obj == 0 )  return;
+
+    memcpy( t_value, &( obj->GetScales().x ), 3 * sizeof( float ) );
 }
 
 void TW_CALL _setWireModeCB(  const void* t_value, void* t_clientData ) {
@@ -464,10 +499,10 @@ int main()
     CPerspCamShader simpleShader( &simpleCam );
     simpleShader.BindShader();
 
-    CTriangle triangle( &simpleShader );
-   
-    CModel sphere(  &simpleShader, g_model_sphere );
-    
+
+    CTriangle triangle( &simpleShader );   
+    CModel sphere( &simpleShader, g_model_sphere );
+    CModel spider( &simpleShader, g_model_spider );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -479,20 +514,41 @@ int main()
     TwBar *bar = TwNewBar( "bar" );
     TwDefine( " bar label='camera properties' " );
     TwDefine(" GLOBAL help='a simple demo for look at camera' ");
+
+    // select obj
+    // init objs
+    objs[ OBJ_TRIANGLE ] = &triangle;
+    objs[ OBJ_SPIDER ] = &spider;
+    objs[ OBJ_SPHERE ] = &sphere;
+
+    g_selObj = objs[ g_selObjType ];
+
+    TwEnumVal objEV[NUM_OF_OBJ] = { { OBJ_TRIANGLE,   "Triangle" }, 
+                                      { OBJ_SPHERE,     "Sphere" }, 
+                                      { OBJ_SPIDER,     "Spider" }, 
+                                  };
+    TwType _TW_TYPE_OBJ = TwDefineEnum( "ObjType", objEV, NUM_OF_OBJ );
+    TwAddVarCB( bar, "Object", _TW_TYPE_OBJ, _setObjCB, _getObjCB, 0, " label='present object' help='Change object to show.' ");
+
     TwAddVarCB( bar, "wire", TW_TYPE_BOOL32, _setWireModeCB, _getWireModeCB, 0,  " label='Wireframe' help='Toggle wireframe display mode.' ");
     TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( simpleShader._vertexColor ), " label='vertex color' opened=true " );
 
     // vec struct for gui, which is mapped to a glm::vec3
     // so we don't have to steal the DIR3F type
-    TwStructMember _tw_pos3Members[] = {
+    TwStructMember _tw_vec3Members[] = {
         { "x", TW_TYPE_FLOAT, offsetof( glm::vec3, x ), " step=0.01 help='vec3[0]' " },
         { "y", TW_TYPE_FLOAT, offsetof( glm::vec3, y ), " step=0.01 help='vec3[1]' " },
         { "z", TW_TYPE_FLOAT, offsetof( glm::vec3, z ), " step=0.01 help='vec3[2]' " },
     };
 
-    TwType _TW_TYPE_POS3F = TwDefineStruct( "Position", _tw_pos3Members, 3, sizeof(glm::vec3), NULL, NULL );
-    TwAddVarCB( bar, "camPos", _TW_TYPE_POS3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
+    // model
+    TwAddVarCB( bar, "object", _TW_TYPE_VEC3F, _setObjScaleCB, _getObjScaleCB, ( void* )( g_selObj ),  " label='selected object scales' opened=true help='selected object scales' ");
+    // camera  pos   
+    TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    
+
     // - Directly redirect GLFW mouse button events to AntTweakBar
     glfwSetMouseButtonCallback( window, ( GLFWmousebuttonfun )_gui_mouseButtonCallback );
     // - Directly redirect GLFW mouse position events to AntTweakBar
@@ -517,9 +573,10 @@ int main()
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
-        // triangle.DrawModel();
-        sphere.DrawModel();
 
+        if( g_selObj ) {
+            g_selObj->DrawModel();
+        }
         _gui_draw();
 
         glfwSwapBuffers( window );
