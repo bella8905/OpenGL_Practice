@@ -19,8 +19,8 @@ class CShader
 {
 public:
     // CShader( const string& t_vs, const string& t_fs );
-    CShader( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
-    virtual ~CShader();
+    CShader() : _inited( false ), _sp(0) {}
+    virtual ~CShader() {}
 
 protected:
     std::string _vs, _fs, _ts, _gs;
@@ -28,7 +28,7 @@ protected:
     bool _inited;
 
 protected:
-    virtual void initSP() = 0;
+    virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
     // create a shader obj, return the shader obj index
     std::string glTypeToString( GLenum t_type );
     void printShaderInfoLog( const GLuint& t_shaderIndex );
@@ -67,7 +67,7 @@ private:
     CCamera* _camera;
 
 protected:
-    virtual void initSP();
+    virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
     virtual void BindShaderWithObject( CObject* t_object );
@@ -76,7 +76,10 @@ public:
 
 class CPhongShader : public CPerspCamShader {
 public:
-    CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ) {}
+    CPhongShader( CCamera* t_cam );
     ~CPhongShader() {} 
+
+protected:
+    virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 };

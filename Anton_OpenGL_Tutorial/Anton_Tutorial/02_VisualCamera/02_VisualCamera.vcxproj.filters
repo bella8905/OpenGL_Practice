@@ -45,6 +45,10 @@
     <ClCompile Include="..\00_BellaUtil\stb_image\stb_image_write.c">
       <Filter>Utl</Filter>
     </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\00_BellaUtil\Utl_Color.h">
@@ -83,6 +87,11 @@
     <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h">
       <Filter>Utl</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Light.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\simple.frag">
@@ -91,8 +100,14 @@
     <None Include="shaders\lookAtCam.vert">
       <Filter>shaders</Filter>
     </None>
+    <None Include="shaders\phong.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="log\GL_LOG.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="02_VisualCamera.rc" />
   </ItemGroup>
 </Project>

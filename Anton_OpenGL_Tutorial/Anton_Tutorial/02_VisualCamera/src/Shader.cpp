@@ -16,18 +16,6 @@
 #include "Object.h"
 #include "Utl_Include.h"
 
-// CShader::CShader( const std::string& t_vs, const std::string& t_fs ) : CShader(  t_vs, "", "", t_fs ) {
-// }
-
-CShader::CShader( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) : _vs( t_vs ), _gs( t_gs ), _ts( t_ts ), _fs( t_fs ), _inited( false ), _sp(0)  {
-    // initSP();
-}
-
-
-CShader::~CShader()
-{
-}
-
 
 ///////////////////////////////////////////////
 // Shader / Shader Program Error Checking
@@ -275,7 +263,11 @@ void CShader::BindShader()
     glUseProgram( _sp );
 }
 
-void CShader::initSP() {
+void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
+    _vs = t_vs;
+    _fs = t_fs;
+    _gs = t_gs;
+    _ts = t_ts;
     createShaderProgram();
 }
 
@@ -284,15 +276,15 @@ void CShader::initSP() {
 const std::string PERSP_CAM_SHADER_VS_FILE = "shaders/lookAtCam.vert";
 const std::string PERSP_CAM_SHADER_FS_FILE = "shaders/simple.frag";
 
-CPerspCamShader::CPerspCamShader( CCamera* t_cam ) : CShader( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE ), _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
+CPerspCamShader::CPerspCamShader( CCamera* t_cam ) :  _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
-    initSP();
+    initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
 }
 
-void CPerspCamShader::initSP() {
+void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
     assert( _camera != 0 );
 
-    CShader::initSP();
+    CShader::initSP( t_vs, t_fs, t_gs, t_ts );
     
     // uniforms
     _uni_inputColorLoc = glGetUniformLocation( _sp, "inputColor" );
@@ -325,6 +317,20 @@ void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
 }
 
 
+
+// phone shader
 const std::string PHONG_SHADER_VS_FILE = "shaders/lookAtCam.vert";
 const std::string PHONG_SHADER_FS_FILE = "shaders/phong.frag";
 
+
+CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ) {
+    initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
+}
+
+void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
+    assert( _camera != 0 );
+
+    CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
+
+    _inited = true;
+}
