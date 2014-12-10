@@ -3,8 +3,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject( CShader* t_shader ) : _inited( false ), _shader( t_shader ), _scale( 1.0f ), _translate( 0.f ), _rot( 1.0f ) {
-    calModelMat();
+CObject::CObject( CShader* t_shader ) : _inited( false ), _shader( t_shader ), _scale( 1.0f ), _modelMat( 1.f ) {
 }
 
 
@@ -13,26 +12,32 @@ CObject::~CObject(void)
 }
 
 
-void CObject::calModelMat() {
-    mat4 scaleMat = mat4( vec4( _scale.x, 0.f,      0.f,     0.f ), 
-                          vec4( 0.f,      _scale.y, 0.f,     0.f ), 
-                          vec4( 0.f,      0.f,     _scale.z, 0.f ), 
-                          vec4( 0.f,      0.f,     0.f,      1.f ) );
-    mat4 rotMat = mat4( vec4( _rot[0], 0.f ), 
-                        vec4( _rot[1], 0.f ), 
-                        vec4( _rot[2], 0.f ), 
-                        vec4( 0.f, 0.f, 0.f, 1.f ) );
-    mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
-                              vec4( 0.f, 1.f, 0.f, 0.f ), 
-                              vec4( 0.f, 0.f, 1.f, 0.f ), 
-                              vec4( _translate, 1.f ) );
+// void CObject::calModelMat() {
+//     mat4 scaleMat = mat4( vec4( _scale, 0.f,      0.f,     0.f ), 
+//                           vec4( 0.f,    _scale,   0.f,     0.f ), 
+//                           vec4( 0.f,    0.f,     _scale,   0.f ), 
+//                           vec4( 0.f,    0.f,     0.f,      1.f ) );
+//     mat4 rotMat = mat4( vec4( _rot[0], 0.f ), 
+//                         vec4( _rot[1], 0.f ), 
+//                         vec4( _rot[2], 0.f ), 
+//                         vec4( 0.f, 0.f, 0.f, 1.f ) );
+//     mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
+//                               vec4( 0.f, 1.f, 0.f, 0.f ), 
+//                               vec4( 0.f, 0.f, 1.f, 0.f ), 
+//                               vec4( _translate, 1.f ) );
+// 
+//     _modelMat = translateMat * rotMat * scaleMat;
+// }
 
-    _modelMat = translateMat * rotMat * scaleMat;
-}
+void CObject::SetScales( const float& t_scales ) {
+    float scale = t_scales / _scale;
+    mat4 scaleMat = mat4(   vec4( scale, 0.f,      0.f,     0.f ), 
+                            vec4( 0.f,    scale,   0.f,     0.f ), 
+                            vec4( 0.f,    0.f,     scale,   0.f ), 
+                            vec4( 0.f,    0.f,     0.f,      1.f ) );
 
-void CObject::SetScales( const vec3& t_scales ) {
+    _modelMat = scaleMat * _modelMat;
     _scale = t_scales;
-    calModelMat();
 }
 
 // triangle
@@ -88,7 +93,7 @@ void CTriangle::DrawModel() {
 }
 
 // model
-void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh ) {
+void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
     if( _inited )   return;
     assert( t_aiMesh );
 
@@ -111,6 +116,16 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh ) {
             points.push_back( ( GLfloat )point->x );
             points.push_back( ( GLfloat )point->y );
             points.push_back( ( GLfloat )point->z );
+
+            if( t_unified ) {
+                if( i == 0 ) {
+                    _bounds._min = vec3( point->x, point->y, point->z );
+                    _bounds._max = vec3( point->x, point->y, point->z );
+                }
+                else {
+                    _bounds.SetBounds( vec3( point->x, point->y, point->z ) );
+                }
+            }
         }
 
         glGenBuffers( 1, &_vbo );
@@ -231,11 +246,40 @@ bool CModel::initModel() {
 
     // mesh
     _meshes.clear();
+    
+    SBoundBox bounds; 
     for( unsigned int i = 0; i < scene->mNumMeshes; ++i ) {
         const aiMesh* assMesh = scene->mMeshes[ i ];
         SMesh mesh;
-        mesh.InitMesh( assMesh );
+        mesh.InitMesh( assMesh, _unified );
         _meshes.push_back( mesh );
+
+        if( _unified ) {
+           if( i == 0 ) {
+               bounds = mesh._bounds;
+           }
+           else {
+               bounds.SetBounds( mesh._bounds );
+           }
+        }
+    }
+
+    if( _unified ) {
+        _adjustedTranslate = -bounds.GetCenter();
+        _adjustedScale = 2.f / bounds.GetLongestSide();
+
+        mat4 scaleMat = mat4(   vec4( _adjustedScale, 0.f,            0.f,            0.f ), 
+                                vec4( 0.f,            _adjustedScale, 0.f,            0.f ), 
+                                vec4( 0.f,            0.f,            _adjustedScale, 0.f ), 
+                                vec4( 0.f,            0.f,            0.f,            1.f ) );
+
+        mat4 translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
+                                    vec4( 0.f, 1.f, 0.f, 0.f ), 
+                                    vec4( 0.f, 0.f, 1.f, 0.f ), 
+                                    vec4( _adjustedTranslate, 1.f ) );
+
+        // translate the model first to center and then scale
+        _modelMat = _modelMat * scaleMat * translateMat;
     }
  
     _inited = true;

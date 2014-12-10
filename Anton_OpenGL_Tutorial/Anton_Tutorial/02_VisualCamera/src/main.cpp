@@ -353,15 +353,13 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
 
 void TW_CALL _setObjScaleCB( const void* t_value, void* t_clientData  ) {
     if( g_selObj == 0 )   return;
-
-    vec3 newScale( ( (float*)t_value )[0],  ( (float*)t_value )[1],  ( (float*)t_value )[2] ); 
-    g_selObj->SetScales( newScale );
+    g_selObj->SetScales( *( ( float* )t_value ) );
 }
 
 void TW_CALL _getObjScaleCB( void* t_value, void* t_clientData  ) {
     if( g_selObj == 0 )  return;
 
-    memcpy( t_value, &( g_selObj->GetScales().x ), 3 * sizeof( float ) );
+    memcpy( t_value, &( g_selObj->GetScales() ), 3 * sizeof( float ) );
 }
 
 
@@ -501,8 +499,8 @@ int main()
 
 
     CTriangle triangle( &simpleShader );   
-    CModel sphere( &simpleShader, g_model_sphere );
-    CModel spider( &simpleShader, g_model_spider );
+    CModel sphere( &simpleShader, g_model_sphere, true );
+    CModel spider( &simpleShader, g_model_spider, true );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -544,7 +542,7 @@ int main()
     TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
     // model
-    TwAddVarCB( bar, "object", _TW_TYPE_VEC3F, _setObjScaleCB, _getObjScaleCB, 0,  " label='selected object scales' opened=true help='selected object scales' ");
+    TwAddVarCB( bar, "object scale", TW_TYPE_FLOAT, _setObjScaleCB, _getObjScaleCB, 0,  " label='selected object scales' step=0.01 help='selected object scales' ");
     // camera  pos   
     TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
     
