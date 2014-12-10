@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////
+//
+//  Practice_11_19_14 - shader
+//
+//  Implementation of Anton's OpenGL tutorial
+//
+//  Copyright (c) 2014 Bella Q
+//  
+/////////////////////////////////////////////////////////////////
+
 #include <iostream>
 #include <fstream>
 #include <streambuf>
@@ -271,10 +281,10 @@ void CShader::initSP() {
 
 
 
-const std::string CPerspCamShader::_VS_FILE = "shaders/lookAtCam.vert";
-const std::string CPerspCamShader::_FS_FILE = "shaders/simple.frag";
+const std::string PERSP_CAM_SHADER_VS_FILE = "shaders/lookAtCam.vert";
+const std::string PERSP_CAM_SHADER_FS_FILE = "shaders/simple.frag";
 
-CPerspCamShader::CPerspCamShader( CCamera* t_cam ) : CShader( _VS_FILE, _FS_FILE ), _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
+CPerspCamShader::CPerspCamShader( CCamera* t_cam ) : CShader( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE ), _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
     initSP();
 }
@@ -313,3 +323,8 @@ void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
     glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_object->GetModelMat() ) );
 }
+
+
+const std::string PHONG_SHADER_VS_FILE = "shaders/lookAtCam.vert";
+const std::string PHONG_SHADER_FS_FILE = "shaders/phong.frag";
+

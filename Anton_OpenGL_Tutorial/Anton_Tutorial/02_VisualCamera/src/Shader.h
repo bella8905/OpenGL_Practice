@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////
+//
+//  Practice_11_19_14 - shader
+//
+//  Implementation of Anton's OpenGL tutorial
+//
+//  Copyright (c) 2014 Bella Q
+//  
+/////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <string>
@@ -54,9 +64,6 @@ public:
     vec4 _vertexColor;
 
 private:
-    static const std::string _VS_FILE;
-    static const std::string _FS_FILE;
-
     CCamera* _camera;
 
 protected:
@@ -64,4 +71,12 @@ protected:
 
 public:
     virtual void BindShaderWithObject( CObject* t_object );
+};
+
+
+class CPhongShader : public CPerspCamShader {
+public:
+    CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ) {}
+    ~CPhongShader() {} 
+
 };

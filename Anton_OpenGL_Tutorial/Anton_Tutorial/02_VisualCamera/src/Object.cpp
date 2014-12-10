@@ -1,3 +1,13 @@
+/////////////////////////////////////////////////////////////////
+//
+//  Practice_11_19_14 - object
+//
+//  Implementation of Anton's OpenGL tutorial
+//
+//  Copyright (c) 2014 Bella Q
+//  
+/////////////////////////////////////////////////////////////////
+
 #include "Object.h"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
