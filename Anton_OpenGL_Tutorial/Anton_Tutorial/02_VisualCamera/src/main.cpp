@@ -497,6 +497,9 @@ int main()
     CPerspCamShader simpleShader( &simpleCam );
     simpleShader.BindShader();
 
+    // phong shader
+    CPhongShader phongShader( &simpleCam );
+
 
     CTriangle triangle( &simpleShader );   
     CModel sphere( &simpleShader, g_model_sphere, true );

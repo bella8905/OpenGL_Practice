@@ -56,22 +56,32 @@ bool CTriangle::initModel() {
 
     if( _inited )   return true;
 
-    vector<vec3> points;
-    points.push_back( vec3( 0.0f, 0.5f, 0.0f ) );
-    points.push_back( vec3( 0.5f, -0.5f, 0.0f ) );
-    points.push_back( vec3( -0.5f, -0.5f, 0.0f ) );
+    struct SVertex {
+        vec3 _pos;
+        vec3 _normal;
+
+        SVertex( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
+    };
+
+    vector<SVertex> vertices;
+    vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vertices.push_back( SVertex( vec3( -0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+
 
     // generate vao and vbos
     glGenBuffers( 1, &_vbo );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo );
-    glBufferData( GL_ARRAY_BUFFER, 9 * sizeof( float ), &points[0], GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * vertices.size(), &vertices[0], GL_STATIC_DRAW );
 
     glGenVertexArrays( 1, &_vao );
     glBindVertexArray( _vao );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo );
 
-    glVertexAttribPointer( _shader->_attr_pos, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _pos ) );
+    glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _normal ) );
     glEnableVertexAttribArray( 0 );
+    glEnableVertexAttribArray( 1 );
 
     _inited = true;
 

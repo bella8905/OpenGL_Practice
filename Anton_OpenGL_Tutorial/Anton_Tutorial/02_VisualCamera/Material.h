@@ -15,13 +15,13 @@
 class CMaterial
 {
 public:
-    CMaterial( const CColor& t_ks, const CColor& t_kd, const CColor& t_ka, const float& t_splExp );
+    CMaterial( const Utl::CColor& t_ks, const Utl::CColor& t_kd, const Utl::CColor& t_ka, const float& t_splExp );
     virtual ~CMaterial(void);
 
 protected:
-    CColor _ks;     // specular reflectance factor
+    Utl::CColor _ks;     // specular reflectance factor
     float _splExp;  // specular power
-    CColor _kd;     // diffuse reflectance factor
-    CColor _ka;     // ambient reflectance factor
+    Utl::CColor _kd;     // diffuse reflectance factor
+    Utl::CColor _ka;     // ambient reflectance factor
 };
 

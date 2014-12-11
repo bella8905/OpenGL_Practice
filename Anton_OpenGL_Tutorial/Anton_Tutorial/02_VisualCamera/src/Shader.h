@@ -44,7 +44,11 @@ protected:
 
 public:
     // attrib location
-    GLuint _attr_pos;
+    /*GLuint _attr_pos;*/
+    // always set attribute loc
+    // 1: pos
+    // 2: normal
+    // 3: texcoords
 
 public:
     void BindShader();
@@ -63,7 +67,7 @@ public:
 
     vec4 _vertexColor;
 
-private:
+protected:
     CCamera* _camera;
 
 protected:

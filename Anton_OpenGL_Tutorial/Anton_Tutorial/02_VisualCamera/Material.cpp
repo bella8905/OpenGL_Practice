@@ -11,7 +11,7 @@
 #include "Material.h"
 
 
-CMaterial::CMaterial( const CColor& t_ks, const CColor& t_kd, const CColor& t_ka, const float& t_splExp ) : _ks(t_ks), _kd(t_kd), _ka(t_ka), _splExp(t_splExp)
+CMaterial::CMaterial( const Utl::CColor& t_ks, const Utl::CColor& t_kd, const Utl::CColor& t_ka, const float& t_splExp ) : _ks(t_ks), _kd(t_kd), _ka(t_ka), _splExp(t_splExp)
 {
 }
 

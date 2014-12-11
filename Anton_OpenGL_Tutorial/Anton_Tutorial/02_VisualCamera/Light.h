@@ -16,13 +16,13 @@
 class CLight
 {
 public:
-    CLight( const vec3& t_pos, const CColor& t_ls, const CColor& t_ld, const CColor& t_la );
+    CLight( const vec3& t_pos, const Utl::CColor& t_ls, const Utl::CColor& t_ld, const Utl::CColor& t_la );
     virtual ~CLight(void);
 
 protected:
     vec3 _pos;
-    CColor _ls;     // specular light color
-    CColor _ld;     // diffuse light color
-    CColor _la;     // ambient light color
+    Utl::CColor _ls;     // specular light color
+    Utl::CColor _ld;     // diffuse light color
+    Utl::CColor _la;     // ambient light color
 };
 

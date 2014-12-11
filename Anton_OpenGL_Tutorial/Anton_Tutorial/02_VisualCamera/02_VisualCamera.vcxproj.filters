@@ -48,7 +48,9 @@
     <ClCompile Include="Light.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Material.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\00_BellaUtil\Utl_Color.h">
@@ -87,27 +89,28 @@
     <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h">
       <Filter>Utl</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="Light.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\simple.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shaders\lookAtCam.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="shaders\phong.frag">
-      <Filter>shaders</Filter>
-    </None>
+    <ClInclude Include="Material.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="log\GL_LOG.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="02_VisualCamera.rc" />
+    <None Include="..\shaders\phong.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\phong.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\simple_lookAtCam.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\simple.frag">
+      <Filter>shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

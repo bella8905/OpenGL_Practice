@@ -263,7 +263,7 @@ void CShader::BindShader()
     glUseProgram( _sp );
 }
 
-void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
+void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
     _vs = t_vs;
     _fs = t_fs;
     _gs = t_gs;
@@ -273,15 +273,15 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 
 
 
-const std::string PERSP_CAM_SHADER_VS_FILE = "shaders/lookAtCam.vert";
-const std::string PERSP_CAM_SHADER_FS_FILE = "shaders/simple.frag";
+const std::string PERSP_CAM_SHADER_VS_FILE = "../shaders/simple_lookAtCam.vert";
+const std::string PERSP_CAM_SHADER_FS_FILE = "../shaders/simple.frag";
 
 CPerspCamShader::CPerspCamShader( CCamera* t_cam ) :  _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
     initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
 }
 
-void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
+void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
     assert( _camera != 0 );
 
     CShader::initSP( t_vs, t_fs, t_gs, t_ts );
@@ -291,10 +291,10 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
     _uni_viewMatLoc = glGetUniformLocation( _sp, "view" );
     _uni_projMatLoc = glGetUniformLocation( _sp, "proj" );
     _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
-    assert( _uni_inputColorLoc >= 0 && _uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc );
+    assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc );
 
     // attributes
-    _attr_pos = 0;
+/*    _attr_pos = 0;*/
 
     _inited = true;
 }
@@ -310,7 +310,10 @@ void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
 
     CShader::BindShader();
 
-    glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
+    if( _uni_inputColorLoc >= 0 ) {
+        glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
+    }
+
     glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetViewMat() ) );
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
     glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_object->GetModelMat() ) );
@@ -319,15 +322,15 @@ void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
 
 
 // phone shader
-const std::string PHONG_SHADER_VS_FILE = "shaders/lookAtCam.vert";
-const std::string PHONG_SHADER_FS_FILE = "shaders/phong.frag";
+const std::string PHONG_SHADER_VS_FILE = "../shaders/phong.vert";
+const std::string PHONG_SHADER_FS_FILE = "../shaders/phong.frag";
 
 
 CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ) {
     initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
 }
 
-void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" ) {
+void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
     assert( _camera != 0 );
 
     CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );

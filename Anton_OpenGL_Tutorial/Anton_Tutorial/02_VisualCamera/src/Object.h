@@ -53,7 +53,7 @@ public:
 
 class CTriangle : public CObject {
 public:
-    CTriangle( CShader* t_shader  ) : CObject( t_shader ),  _vao( 0 ) { initModel(); }
+    CTriangle( CShader* t_shader  ) : CObject( t_shader ),  _vao( 0 ), _vbo( 0 ) { initModel(); }
     ~CTriangle() { deinitModel(); }
 
 protected:
@@ -61,7 +61,8 @@ protected:
     // but we also need to keep track of vbo loc so we can clear the buffer obj when we are done with this mesh
     // delete vao only removes the references to vbos
     // http://stackoverflow.com/questions/14274860/does-gldeletevertexarrays-lead-to-deletion-of-vbos-associated-with-vao-being-de
-    GLuint _vao, _vbo;  
+    GLuint _vao;
+    GLuint _vbo;    // use a single buffer obj for pos and normal  
 protected:
     bool initModel();
     void deinitModel();
