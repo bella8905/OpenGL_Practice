@@ -14,6 +14,7 @@
 
 #include "Shader.h"
 #include "Object.h"
+#include "Light.h"
 #include "Utl_Include.h"
 
 
@@ -253,6 +254,7 @@ void CShader::createShaderProgram() {
     _inited = true;
 }
 
+// tell everyone we are going to use the shader
 void CShader::BindShader()
 {
     if( !_inited ) {
@@ -291,7 +293,7 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
     _uni_viewMatLoc = glGetUniformLocation( _sp, "view" );
     _uni_projMatLoc = glGetUniformLocation( _sp, "proj" );
     _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
-    assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc );
+    assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc >= 0 );
 
     // attributes
 /*    _attr_pos = 0;*/
@@ -299,16 +301,9 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
     _inited = true;
 }
 
+// bind perspective camera shader specific content for drawing
 void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
-
-    if( !_inited ) {
-        LogError<<"shader not inited"<<LogEndl;
-        return;
-    }
-
     assert( t_object  );
-
-    CShader::BindShader();
 
     if( _uni_inputColorLoc >= 0 ) {
         glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
@@ -326,7 +321,10 @@ const std::string PHONG_SHADER_VS_FILE = "../shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "../shaders/phong.frag";
 
 
-CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ) {
+CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ),
+                                               _uni_lightPos( -1 ), _uni_lightLs( -1 ), _uni_lightLd( -1 ), _uni_lightLa( -1 ), 
+                                               _uni_mtlKs( -1 ), _uni_mtlKd( -1 ), _uni_mtlKa( -1 ), _uni_mtlSplExp( -1 ) 
+{
     initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
 }
 
@@ -335,5 +333,40 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 
     CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
 
+    _uni_lightPos = glGetUniformLocation( _sp, "light_pos_world");
+    _uni_lightLs = glGetUniformLocation( _sp, "ls" );
+    _uni_lightLd = glGetUniformLocation( _sp, "ld" );
+    _uni_lightLa = glGetUniformLocation( _sp, "la" );
+    _uni_mtlKs = glGetUniformLocation( _sp, "ks" );
+    _uni_mtlKd = glGetUniformLocation( _sp, "kd" ); 
+    _uni_mtlKa = glGetUniformLocation( _sp, "ka" );
+    _uni_mtlSplExp = glGetUniformLocation( _sp, "spl_exp" );
+
+    assert( _uni_lightPos >= 0 && _uni_lightLs >= 0 && _uni_lightLd >= 0 && _uni_lightLa >= 0 && 
+            _uni_mtlKs >= 0 && _uni_mtlKd >= 0 && _uni_mtlKa >= 0 && _uni_mtlSplExp >= 0 );
+
     _inited = true;
+}
+
+
+// bind phong shader specific content for drawing
+void CPhongShader::BindShaderWithObjectAndLight( CObject* t_object, CLight* t_light ) {
+    assert( t_object && t_light );
+    CPerspCamShader::BindShaderWithObject( t_object );
+
+    glUniform3fv( _uni_lightPos, 1, glm::value_ptr( t_light->GetPos() ) );
+    glUniform3fv( _uni_lightLs, 1, glm::value_ptr( t_light->GetLs() ) );
+    glUniform3fv( _uni_lightLd, 1, glm::value_ptr( t_light->GetLd() ) );
+    glUniform3fv( _uni_lightLa, 1, glm::value_ptr( t_light->GetLa() ) );
+
+    CMaterial* mtl = &(t_object->GetMaterial());
+    glUniform3fv( _uni_mtlKd, 1, glm::value_ptr( mtl->GetKd()._Color ) );
+    if( mtl->GetHasSpecular() ) {
+        glUniform3fv( _uni_mtlKs, 1, glm::value_ptr( mtl->GetKs()._Color ) );
+        glUniform1f( _uni_mtlSplExp, mtl->GetSplExp() );
+    }
+    // need to bind uniforms to zeros??
+
+    glUniform3fv( _uni_mtlKa, 1, glm::value_ptr( mtl->GetKa()._Color ) );
+
 }

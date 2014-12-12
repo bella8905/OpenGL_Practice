@@ -13,7 +13,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject( CShader* t_shader ) : _inited( false ), _shader( t_shader ), _scale( 1.0f ), _modelMat( 1.f ) {
+CObject::CObject() : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ) {
 }
 
 
@@ -52,8 +52,6 @@ void CObject::SetScales( const float& t_scales ) {
 
 // triangle
 bool CTriangle::initModel() {
-    assert( _shader != 0 );
-
     if( _inited )   return true;
 
     struct SVertex {
@@ -97,14 +95,6 @@ void CTriangle::DrawModel() {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
-    }
-
-    CPerspCamShader* pPerspCamShader = dynamic_cast<CPerspCamShader*>( _shader );
-    if( pPerspCamShader ) {
-        pPerspCamShader->BindShaderWithObject( this );
-    }
-    else {
-        _shader->BindShader();
     }
 
     glBindVertexArray( _vao );
@@ -319,14 +309,6 @@ void CModel::DrawModel() {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
-    }
-
-    CPerspCamShader* pPerspCamShader = dynamic_cast<CPerspCamShader*>( _shader );
-    if( pPerspCamShader ) {
-        pPerspCamShader->BindShaderWithObject( this );
-    }
-    else {
-        _shader->BindShader();
     }
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {

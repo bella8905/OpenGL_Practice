@@ -14,6 +14,7 @@
 #include "Camera.h"
 
 class CObject;
+class CLight;
 
 class CShader
 {
@@ -74,7 +75,7 @@ protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
-    virtual void BindShaderWithObject( CObject* t_object );
+    void BindShaderWithObject( CObject* t_object );
 };
 
 
@@ -84,6 +85,15 @@ public:
     ~CPhongShader() {} 
 
 protected:
+    // uniform location
+    GLint _uni_lightPos, _uni_lightLs, _uni_lightLd, _uni_lightLa, _uni_mtlKs, _uni_mtlKd, _uni_mtlKa, _uni_mtlSplExp;
+
+protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
+public:
+    void BindShaderWithObjectAndLight( CObject* t_object, CLight* t_light );
+
 };
+
+

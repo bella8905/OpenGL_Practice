@@ -45,10 +45,10 @@
     <ClCompile Include="..\00_BellaUtil\stb_image\stb_image_write.c">
       <Filter>Utl</Filter>
     </ClCompile>
-    <ClCompile Include="Light.cpp">
+    <ClCompile Include="src\Light.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Material.cpp">
+    <ClCompile Include="src\Material.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -89,10 +89,10 @@
     <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h">
       <Filter>Utl</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
+    <ClInclude Include="src\Light.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="Material.h">
+    <ClInclude Include="src\Material.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

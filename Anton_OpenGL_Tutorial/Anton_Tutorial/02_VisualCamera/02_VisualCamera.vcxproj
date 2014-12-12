@@ -75,9 +75,9 @@
     <ClCompile Include="..\00_BellaUtil\Utl_Global.cpp" />
     <ClCompile Include="..\00_BellaUtil\Utl_LogMsg.cpp" />
     <ClCompile Include="..\00_BellaUtil\Utl_Math.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Material.cpp" />
     <ClCompile Include="src\Camera.cpp" />
+    <ClCompile Include="src\Light.cpp" />
+    <ClCompile Include="src\Material.cpp" />
     <ClCompile Include="src\Object.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Shader.cpp" />
@@ -92,9 +92,9 @@
     <ClInclude Include="..\00_BellaUtil\Utl_LogMsg.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_Math.h" />
     <ClInclude Include="..\00_BellaUtil\Utl_Time.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Material.h" />
     <ClInclude Include="src\Camera.h" />
+    <ClInclude Include="src\Light.h" />
+    <ClInclude Include="src\Material.h" />
     <ClInclude Include="src\Object.h" />
     <ClInclude Include="src\Shader.h" />
   </ItemGroup>

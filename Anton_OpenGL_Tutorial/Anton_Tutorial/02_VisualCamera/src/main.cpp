@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Object.h"
+#include "Light.h"
 #include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
 
@@ -495,15 +496,36 @@ int main()
 
     // Shader 
     CPerspCamShader simpleShader( &simpleCam );
-    simpleShader.BindShader();
+    // simpleShader.BindShader();
 
     // phong shader
     CPhongShader phongShader( &simpleCam );
+    phongShader.BindShader();
 
+    // material
+    bool hasSpecular = true;
+    Utl::CColor ks( 1.f, 1.f, 1.f );
+    float specularExp = 100.f;
+    Utl::CColor kd( 1.f, 0.5f, 1.f );
+    Utl::CColor ka( 1.f, 1.f, 1.f );
 
-    CTriangle triangle( &simpleShader );   
-    CModel sphere( &simpleShader, g_model_sphere, true );
-    CModel spider( &simpleShader, g_model_spider, true );
+    CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
+
+    // geos
+    CTriangle triangle;   
+    CModel sphere( g_model_sphere, true );
+    CModel spider( g_model_spider, true );
+
+    triangle.SetMaterial( blinnMat );
+    sphere.SetMaterial( blinnMat );
+
+    // light
+    vec3 lightPos( 0.f, 0.f, 2.f );
+    vec3 lightLs( 1.f, 1.f, 1.f );
+    vec3 lightLd( 0.7f, 0.7f, 0.7f );
+    vec3 lightLa( 0.2f, 0.2f, 0.2f );
+
+    CLight simpleLight( lightPos, lightLs, lightLd, lightLa );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -574,6 +596,9 @@ int main()
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
+
+        phongShader.BindShader();
+        phongShader.BindShaderWithObjectAndLight( g_selObj, &simpleLight );
 
         if( g_selObj ) {
             g_selObj->DrawModel();
