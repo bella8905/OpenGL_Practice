@@ -36,7 +36,7 @@ const string g_model_spider = "../models/spider/spider.obj";
 
 enum ObjType { OBJ_TRIANGLE = 0, OBJ_SPIDER, OBJ_SPHERE };
 const us NUM_OF_OBJ = 3;
-ObjType g_selObjType = OBJ_SPHERE;
+ObjType g_selObjType = OBJ_TRIANGLE;
 CObject* objs[ NUM_OF_OBJ ];
 CObject* g_selObj = 0;
 
@@ -326,10 +326,6 @@ void _updateFPSCounter( GLFWwindow* t_window ) {
     frameCount++;
 }
 
-void _initObjs() {
-
-}
-
 
 // ui callbacks
 // function called when camera pos is changed in the tweakbar
@@ -411,6 +407,7 @@ void _screenPrint() {
     }
 
     delete[] buffer;
+    LogPass<<"image saved"<<LogEndl;
 }
 
 int main()
@@ -494,35 +491,6 @@ int main()
     CSimpleCamera simpleCam;
     simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
 
-    // Shader 
-    CPerspCamShader simpleShader( &simpleCam );
-    // simpleShader.BindShader();
-
-    // phong shader
-    CPhongShader phongShader( &simpleCam );
-    phongShader.BindShader();
-
-    // normal test shader
-    CTestNormalShader testNormalShader( &simpleCam  );
-    // testNormalShader.BindShader();
-
-    // material
-    bool hasSpecular = true;
-    Utl::CColor ks( 1.f, 1.f, 1.f );
-    float specularExp = 100.f;
-    Utl::CColor kd( 1.f, 0.5f, 1.f );
-    Utl::CColor ka( 1.f, 1.f, 1.f );
-
-    CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
-
-    // geos
-    CTriangle triangle;   
-    CModel sphere( g_model_sphere, true );
-    CModel spider( g_model_spider, true );
-
-    triangle.SetMaterial( blinnMat );
-    sphere.SetMaterial( blinnMat );
-
     // light
     vec3 lightPos( 0.f, 0.f, 2.f );
     vec3 lightLs( 1.f, 1.f, 1.f );
@@ -530,6 +498,39 @@ int main()
     vec3 lightLa( 0.2f, 0.2f, 0.2f );
 
     CLight simpleLight( lightPos, lightLs, lightLd, lightLa );
+
+    // Shader 
+    CPerspCamShader simpleShader( &simpleCam );
+    // simpleShader.BindShader();
+
+    // phong shader
+    CPhongShader phongShader( &simpleCam );
+    phongShader.SetLight( &simpleLight );
+
+    // normal test shader
+    CTestNormalShader testNormalShader( &simpleCam  );
+
+    // material
+    bool hasSpecular = true;
+    Utl::CColor ks( 1.f, 1.f, 1.f );
+    float specularExp = 10.f;
+    Utl::CColor kd( 1.f, 0.5f, 0.f );
+    Utl::CColor ka( 1.f, 1.f, 1.f );
+
+    CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
+
+    // geos
+
+    CModel spider( &phongShader, g_model_spider, true );
+    CModel sphere( &phongShader, g_model_sphere, true );
+    CTriangle triangle( &phongShader );   
+
+
+    triangle.SetMaterial( blinnMat );
+    spider.SetMaterial( blinnMat );
+    sphere.SetMaterial( blinnMat );
+
+    sphere.SetShader( &testNormalShader );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -600,11 +601,6 @@ int main()
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
-
-        // use shader
-        phongShader.BindShader();
-        // update variables and draw
-        phongShader.BindShaderWithObjectAndLight( g_selObj, &simpleLight );
 
         if( g_selObj ) {
             g_selObj->DrawModel();

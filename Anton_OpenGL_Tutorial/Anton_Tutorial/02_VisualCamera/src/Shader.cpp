@@ -304,8 +304,9 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
 }
 
 // bind perspective camera shader specific content for drawing
-void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
+void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object ) {
     assert( t_object  );
+    CShader::BindShader();
 
     if( _uni_inputColorLoc >= 0 ) {
         glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
@@ -323,7 +324,7 @@ const std::string PHONG_SHADER_VS_FILE = "../shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "../shaders/phong.frag";
 
 
-CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ),
+CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ), _light( 0 ), 
                                                _uni_lightPos( -1 ), _uni_lightLs( -1 ), _uni_lightLd( -1 ), _uni_lightLa( -1 ), 
                                                _uni_mtlKs( -1 ), _uni_mtlKd( -1 ), _uni_mtlKa( -1 ), _uni_mtlSplExp( -1 ) 
 {
@@ -352,14 +353,14 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 
 
 // bind phong shader specific content for drawing
-void CPhongShader::BindShaderWithObjectAndLight( CObject* t_object, CLight* t_light ) {
-    assert( t_object && t_light );
-    CPerspCamShader::BindShaderWithObject( t_object );
+void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object ) {
+    assert( t_object && _light );
+    CPerspCamShader::BindShaderWithObjectForDrawing( t_object );
 
-    glUniform3fv( _uni_lightPos, 1, glm::value_ptr( t_light->GetPos() ) );
-    glUniform3fv( _uni_lightLs, 1, glm::value_ptr( t_light->GetLs() ) );
-    glUniform3fv( _uni_lightLd, 1, glm::value_ptr( t_light->GetLd() ) );
-    glUniform3fv( _uni_lightLa, 1, glm::value_ptr( t_light->GetLa() ) );
+    glUniform3fv( _uni_lightPos, 1, glm::value_ptr( _light->GetPos() ) );
+    glUniform3fv( _uni_lightLs, 1, glm::value_ptr( _light->GetLs() ) );
+    glUniform3fv( _uni_lightLd, 1, glm::value_ptr( _light->GetLd() ) );
+    glUniform3fv( _uni_lightLa, 1, glm::value_ptr( _light->GetLa() ) );
 
     CMaterial* mtl = &(t_object->GetMaterial());
     glUniform3fv( _uni_mtlKd, 1, glm::value_ptr( mtl->GetKd()._Color ) );
@@ -367,7 +368,11 @@ void CPhongShader::BindShaderWithObjectAndLight( CObject* t_object, CLight* t_li
         glUniform3fv( _uni_mtlKs, 1, glm::value_ptr( mtl->GetKs()._Color ) );
         glUniform1f( _uni_mtlSplExp, mtl->GetSplExp() );
     }
-    // need to bind uniforms to zeros??
+    else{
+        // set ks to all zeros
+        glUniform3f( _uni_mtlKs, 0.f, 0.f, 0.f );
+    }
+
 
     glUniform3fv( _uni_mtlKa, 1, glm::value_ptr( mtl->GetKa()._Color ) );
 

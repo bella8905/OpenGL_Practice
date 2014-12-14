@@ -14,16 +14,17 @@
 #include <string>
 #include "assimp/scene.h"
 #include "Utl_Include.h"
-#include "Shader.h"
 #include "Material.h"
 
+class CShader;
+
 using std::vector;
-using std::string;
+using std::string;  
 
 class CObject
 {
 public:
-    CObject();
+    CObject( CShader* t_shader );
     virtual ~CObject() = 0;
 
 protected:
@@ -33,15 +34,17 @@ protected:
     float _scale;       // only allow uniform scale
 //     glm::vec3 _translate;
 //     glm::mat3 _rot;
+    CShader* _shader;
 
     CMaterial _material;
 protected:
-    virtual bool initModel() = 0;
+    virtual bool initModel();
     virtual void deinitModel() = 0; // delete buffer, etc
     // void calModelMat();
 
 public:
-    virtual void DrawModel() = 0;
+    void SetShader( CShader* t_shader );
+    virtual void DrawModel();
     bool IsInited() { return _inited; }
 
     mat4& GetModelMat() { return _modelMat; }
@@ -57,7 +60,7 @@ public:
 
 class CTriangle : public CObject {
 public:
-    CTriangle() :  _vao( 0 ), _vbo( 0 ) { initModel(); }
+    CTriangle( CShader* t_shader ) : CObject( t_shader ), _vao( 0 ), _vbo( 0 ) { initModel(); }
     ~CTriangle() { deinitModel(); }
 
 protected:
@@ -79,7 +82,7 @@ public:
 // a object read from a model file
 class CModel : public CObject {
 public:
-    CModel( const string& t_file, bool t_unified = false ) : _fileName( t_file ), _unified( t_unified ) { initModel(); }
+    CModel( CShader* t_shader, const string& t_file, bool t_unified = false ) : CObject( t_shader ), _fileName( t_file ), _unified( t_unified ) { initModel(); }
     ~CModel() { deinitModel(); }
 
     struct SBoundBox {

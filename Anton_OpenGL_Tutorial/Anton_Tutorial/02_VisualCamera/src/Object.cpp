@@ -9,11 +9,12 @@
 /////////////////////////////////////////////////////////////////
 
 #include "Object.h"
+#include "Shader.h"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
 
-CObject::CObject() : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ) {
+CObject::CObject( CShader* t_shader ) : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ), _shader( t_shader ) {
 }
 
 
@@ -50,9 +51,37 @@ void CObject::SetScales( const float& t_scales ) {
     _scale = t_scales;
 }
 
+bool CObject::initModel() {
+    assert( _shader );
+    _shader->BindShader();
+
+    return _inited;
+}
+
+void CObject::DrawModel() {
+    if( !_inited ) {
+        LogError<<"model not inited"<<LogEndl;
+        return;
+    }
+
+    assert( _shader );
+    _shader->BindShaderWithObjectForDrawing( this );
+}
+
+void CObject::SetShader( CShader* t_shader ) {
+    if( t_shader != _shader ) {
+        if( _inited ) {
+            // deinitModel();
+            _shader = t_shader; 
+            // initModel();
+        }
+    }
+}
+
 // triangle
 bool CTriangle::initModel() {
-    if( _inited )   return true;
+    // if obj is already inited, simply return
+    if( CObject::initModel() ) return true;
 
     struct SVertex {
         vec3 _pos;
@@ -92,10 +121,8 @@ void CTriangle::deinitModel() {
 }
 
 void CTriangle::DrawModel() {
-    if( !_inited ) {
-        LogError<<"model not inited"<<LogEndl;
-        return;
-    }
+
+    CObject::DrawModel();
 
     glBindVertexArray( _vao );
     glDrawArrays( GL_TRIANGLES, 0, 3 );
@@ -233,7 +260,9 @@ void CModel::SMesh::DrawMesh() {
 }
 
 bool CModel::initModel() {
-    if( _inited )   return true;
+    // if obj is already inited, simply return
+    if( CObject::initModel() ) return true;
+
     // read from model file
     // do it in a c++ way
     Assimp::Importer importer;
@@ -306,10 +335,8 @@ void CModel::deinitModel() {
 }
 
 void CModel::DrawModel() {
-    if( !_inited ) {
-        LogError<<"model not inited"<<LogEndl;
-        return;
-    }
+
+    CObject::DrawModel();
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();
