@@ -179,7 +179,7 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
         glGenBuffers( 1, &_tbo );
         glBindBuffer( GL_ARRAY_BUFFER, _tbo );
         glBufferData( GL_ARRAY_BUFFER, 2 * numOfVertices * sizeof( GLfloat ), &texcoords[0], GL_STATIC_DRAW );
-        glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 0, NULL );
         glEnableVertexAttribArray( 2 );
     }
 

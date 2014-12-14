@@ -97,3 +97,12 @@ public:
 };
 
 
+class CTestNormalShader : public CPerspCamShader {
+public:
+    CTestNormalShader( CCamera* t_cam );
+    ~CTestNormalShader() {} 
+
+public:
+    void BindShaderWithObjectAndLight( CObject* t_object, CLight* t_light );
+
+};

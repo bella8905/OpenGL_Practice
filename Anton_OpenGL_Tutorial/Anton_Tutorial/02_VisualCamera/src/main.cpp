@@ -502,6 +502,10 @@ int main()
     CPhongShader phongShader( &simpleCam );
     phongShader.BindShader();
 
+    // normal test shader
+    CTestNormalShader testNormalShader( &simpleCam  );
+    // testNormalShader.BindShader();
+
     // material
     bool hasSpecular = true;
     Utl::CColor ks( 1.f, 1.f, 1.f );
@@ -597,7 +601,9 @@ int main()
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
+        // use shader
         phongShader.BindShader();
+        // update variables and draw
         phongShader.BindShaderWithObjectAndLight( g_selObj, &simpleLight );
 
         if( g_selObj ) {

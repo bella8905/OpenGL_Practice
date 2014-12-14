@@ -102,6 +102,8 @@
     <Text Include="log\GL_LOG.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\normal_test.frag" />
+    <None Include="..\shaders\normal_test.vert" />
     <None Include="..\shaders\phong.frag" />
     <None Include="..\shaders\phong.vert" />
     <None Include="..\shaders\simple.frag" />

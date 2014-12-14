@@ -274,6 +274,8 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 }
 
 
+//////////////////////////////////////////////////////////
+// a simple perspective camera shader
 
 const std::string PERSP_CAM_SHADER_VS_FILE = "../shaders/simple_lookAtCam.vert";
 const std::string PERSP_CAM_SHADER_FS_FILE = "../shaders/simple.frag";
@@ -315,7 +317,7 @@ void CPerspCamShader::BindShaderWithObject( CObject* t_object ) {
 }
 
 
-
+//////////////////////////////////////////////////////////
 // phone shader
 const std::string PHONG_SHADER_VS_FILE = "../shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "../shaders/phong.frag";
@@ -370,3 +372,17 @@ void CPhongShader::BindShaderWithObjectAndLight( CObject* t_object, CLight* t_li
     glUniform3fv( _uni_mtlKa, 1, glm::value_ptr( mtl->GetKa()._Color ) );
 
 }
+
+
+
+
+const std::string NORTEST_SHADER_VS_FILE = "../shaders/normal_test.vert";
+const std::string NORTEST_SHADER_FS_FILE = "../shaders/normal_test.frag";
+
+
+CTestNormalShader::CTestNormalShader( CCamera* t_cam ) : CPerspCamShader( t_cam )
+{
+    initSP( NORTEST_SHADER_VS_FILE, NORTEST_SHADER_FS_FILE );
+}
+
+
