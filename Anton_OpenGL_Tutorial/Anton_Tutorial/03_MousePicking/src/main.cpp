@@ -403,9 +403,6 @@ int main()
     // geos
     CModel sphere( g_model_sphere, true );
     CCube cube;
-
-
-    sphere.SetMaterial( blinnMat );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -464,9 +461,9 @@ int main()
         mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
         mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );;
         mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        cube.DrawModel( &testNormalShader, left );
-        sphere.DrawModel( &phongShader, center );
-        cube.DrawModel( &simpleShader, right );
+        cube.DrawModel( &testNormalShader, &blinnMat, left );
+        sphere.DrawModel( &phongShader, &blinnMat, center );
+        cube.DrawModel( &simpleShader, &g_defaultMat, right );
 
         _gui_draw();
 

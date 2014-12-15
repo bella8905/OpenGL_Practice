@@ -58,8 +58,9 @@ struct SBoundBox {
 };
 
 // a object class including vao, vbos and ibo for rendering
+// it doesn't include any transformation,  material / shader information
 // make it a singleton, and never instantiate more than 1 instances
-// pass in a transformation matrix for rendering
+// pass in a transformation matrix, shader and matertial for rendering
 class CObject
 {
 public:
@@ -78,7 +79,7 @@ protected:
 //     glm::vec3 _translate;
 //     glm::mat3 _rot;
 
-    CMaterial _material;
+    // CMaterial _material;
 
     // bound box is use to define the boundaries of the object,
     // used for ray based object picking
@@ -92,14 +93,12 @@ protected:
 
 public:
     // draw an instance of the object using a model matrix
-    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
+    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
     bool IsInited() { return _inited; }
 
     mat4& GetModelMat() { return _preprocessModelMatrix; }
     float& GetScales() { return _scale; }
 
-    void SetMaterial( const CMaterial& t_val) { _material = t_val; }
-    CMaterial& GetMaterial() { return _material; }
 
 };
 
@@ -133,7 +132,7 @@ protected:
     void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
-    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
+    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
 };
 
 
@@ -202,5 +201,5 @@ protected:
     void deinitModel();
 
 public:
-    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
+    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
 };

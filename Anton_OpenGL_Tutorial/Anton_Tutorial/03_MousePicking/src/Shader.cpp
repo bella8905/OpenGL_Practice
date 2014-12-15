@@ -304,7 +304,7 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
 }
 
 // bind perspective camera shader specific content for drawing
-void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  ) {
+void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
     assert( t_object  );
     CShader::BindShader();
 
@@ -353,20 +353,19 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 
 
 // bind phong shader specific content for drawing
-void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  ) {
-    assert( t_object && _light );
-    CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_trandform );
+void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
+    assert( t_object && _light && t_material );
+    CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 
     glUniform3fv( _uni_lightPos, 1, glm::value_ptr( _light->GetPos() ) );
     glUniform3fv( _uni_lightLs, 1, glm::value_ptr( _light->GetLs() ) );
     glUniform3fv( _uni_lightLd, 1, glm::value_ptr( _light->GetLd() ) );
     glUniform3fv( _uni_lightLa, 1, glm::value_ptr( _light->GetLa() ) );
 
-    CMaterial* mtl = &(t_object->GetMaterial());
-    glUniform3fv( _uni_mtlKd, 1, glm::value_ptr( mtl->GetKd()._Color ) );
-    if( mtl->GetHasSpecular() ) {
-        glUniform3fv( _uni_mtlKs, 1, glm::value_ptr( mtl->GetKs()._Color ) );
-        glUniform1f( _uni_mtlSplExp, mtl->GetSplExp() );
+    glUniform3fv( _uni_mtlKd, 1, glm::value_ptr( t_material->GetKd()._Color ) );
+    if( t_material->GetHasSpecular() ) {
+        glUniform3fv( _uni_mtlKs, 1, glm::value_ptr( t_material->GetKs()._Color ) );
+        glUniform1f( _uni_mtlSplExp, t_material->GetSplExp() );
     }
     else{
         // set ks to all zeros
@@ -374,7 +373,7 @@ void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object, const mat4
     }
 
 
-    glUniform3fv( _uni_mtlKa, 1, glm::value_ptr( mtl->GetKa()._Color ) );
+    glUniform3fv( _uni_mtlKa, 1, glm::value_ptr( t_material->GetKa()._Color ) );
 
 }
 

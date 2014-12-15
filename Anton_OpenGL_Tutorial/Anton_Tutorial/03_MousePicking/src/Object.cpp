@@ -14,7 +14,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _material( g_defaultMat ), _drawBoundBox( false ) {
+CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
 }
 
 
@@ -28,14 +28,14 @@ bool CObject::initModel() {
     return _inited;
 }
 
-void CObject::DrawModel( CShader* t_shader, const mat4& t_modelMatrix ) {
+void CObject::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
     }
 
     assert( t_shader );
-    t_shader->BindShaderWithObjectForDrawing( this, t_modelMatrix );
+    t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
 }
 
 // primitive
@@ -49,9 +49,9 @@ void CPrimitive::deinitModel() {
     glDeleteBuffers( 1, &_ibo );
 }
 
-void CPrimitive::DrawModel( CShader* t_shader, const mat4& t_modelMatrix) {
+void CPrimitive::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
 
-    CObject::DrawModel( t_shader, t_modelMatrix );
+    CObject::DrawModel( t_shader, t_material, t_modelMatrix );
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
@@ -370,9 +370,9 @@ void CModel::deinitModel() {
     _inited = false;
 }
 
-void CModel::DrawModel( CShader* t_shader, const mat4& t_modelMatrix ) {
+void CModel::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
 
-    CObject::DrawModel( t_shader, t_modelMatrix );
+    CObject::DrawModel( t_shader, t_material, t_modelMatrix );
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();
