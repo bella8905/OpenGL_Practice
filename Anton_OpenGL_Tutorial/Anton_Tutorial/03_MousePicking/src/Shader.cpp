@@ -304,7 +304,7 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
 }
 
 // bind perspective camera shader specific content for drawing
-void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object ) {
+void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  ) {
     assert( t_object  );
     CShader::BindShader();
 
@@ -314,7 +314,7 @@ void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object ) {
 
     glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetViewMat() ) );
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
-    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_object->GetModelMat() ) );
+    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_trandform * t_object->GetModelMat() ) );
 }
 
 
@@ -353,9 +353,9 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 
 
 // bind phong shader specific content for drawing
-void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object ) {
+void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  ) {
     assert( t_object && _light );
-    CPerspCamShader::BindShaderWithObjectForDrawing( t_object );
+    CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_trandform );
 
     glUniform3fv( _uni_lightPos, 1, glm::value_ptr( _light->GetPos() ) );
     glUniform3fv( _uni_lightLs, 1, glm::value_ptr( _light->GetLs() ) );

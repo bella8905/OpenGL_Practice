@@ -20,5 +20,5 @@ CMaterial::~CMaterial(void)
 {
 }
 
-
+// a little purple color
 CMaterial g_defaultMat( Utl::CColor( 1.f, 0.5f, 1.f ), false, Utl::CColor(), 0.f, Utl::CColor( 1.f, 1.f, 1.f ) );

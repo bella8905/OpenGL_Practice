@@ -21,20 +21,26 @@ class CShader;
 using std::vector;
 using std::string;  
 
+// a object class including vao, vbos and ibo for rendering
+// make it a singleton, and never instantiate more than 1 instances
+// pass in a transformation matrix for rendering
 class CObject
 {
 public:
-    CObject( CShader* t_shader );
+    CObject();
     virtual ~CObject() = 0;
 
 protected:
     bool _inited;
 /*    GLuint _vao;*/
-    glm::mat4 _modelMat;
+    // a preprocessed model matrix, 
+    // this is for transforming the model to a more meaningful status
+    // for example, transforming a reading-in model to fit in a unit cube
+    // never change it.
+    glm::mat4 _preprocessModelMatrix;    
     float _scale;       // only allow uniform scale
 //     glm::vec3 _translate;
 //     glm::mat3 _rot;
-    CShader* _shader;
 
     CMaterial _material;
 protected:
@@ -43,12 +49,11 @@ protected:
     // void calModelMat();
 
 public:
-    void SetShader( CShader* t_shader );
-    virtual void DrawModel();
+    // draw an instance of the object using a model matrix
+    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
     bool IsInited() { return _inited; }
 
-    mat4& GetModelMat() { return _modelMat; }
-    void SetScales( const float& t_scales );
+    mat4& GetModelMat() { return _preprocessModelMatrix; }
     float& GetScales() { return _scale; }
 
     void SetMaterial( const CMaterial& t_val) { _material = t_val; }
@@ -66,7 +71,7 @@ struct SVertex {
 
 class CPrimitive : public CObject {
 public:
-    CPrimitive( CShader* t_shader ) : CObject( t_shader ), _vao( 0 ), _vbo( 0 ) {}
+    CPrimitive() : _vao( 0 ), _vbo( 0 ) {}
     ~CPrimitive() { deinitModel(); }
 
 protected:
@@ -86,14 +91,14 @@ protected:
     void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
-    virtual void DrawModel();
+    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
 };
 
 
 // triangle
 class CTriangle : public CPrimitive {
 public:
-    CTriangle( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    CTriangle() { initModel(); }
     ~CTriangle() { deinitModel(); }
 
 protected:
@@ -103,7 +108,7 @@ protected:
 // cube
 class CCube : public CPrimitive {
 public:
-    CCube( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    CCube() { initModel(); }
     ~CCube() { deinitModel(); }
 
 protected:
@@ -115,7 +120,7 @@ protected:
 // a object read from a model file
 class CModel : public CObject {
 public:
-    CModel( CShader* t_shader, const string& t_file, bool t_unified = false ) : CObject( t_shader ), _fileName( t_file ), _unified( t_unified ) { initModel(); }
+    CModel( const string& t_file, bool t_unified = false ) :  _fileName( t_file ), _unified( t_unified ) { initModel(); }
     ~CModel() { deinitModel(); }
 
     struct SBoundBox {
@@ -190,5 +195,5 @@ protected:
     void deinitModel();
 
 public:
-    virtual void DrawModel();
+    virtual void DrawModel( CShader* t_shader, const mat4& t_modelMatrix );
 };

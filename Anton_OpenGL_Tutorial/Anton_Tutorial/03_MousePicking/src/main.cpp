@@ -34,11 +34,11 @@ const string g_imageFilePrefix = "images/screenshot_";
 const string g_model_sphere = "../models/sphere.dae";
 const string g_model_spider = "../models/spider/spider.obj";
 
-enum ObjType { OBJ_TRIANGLE = 0, OBJ_CUBE, OBJ_SPIDER, OBJ_SPHERE };
-const us NUM_OF_OBJ = 4;
-ObjType g_selObjType = OBJ_SPHERE;
-CObject* objs[ NUM_OF_OBJ ];
-CObject* g_selObj = 0;
+// enum ObjType { OBJ_TRIANGLE = 0, OBJ_CUBE, OBJ_SPIDER, OBJ_SPHERE };
+// const us NUM_OF_OBJ = 4;
+// ObjType g_selObjType = OBJ_SPHERE;
+// CObject* objs[ NUM_OF_OBJ ];
+// CObject* g_selObj = 0;
 
 ///////////////////////////////////////////////
 // GUI : AntTweakBar
@@ -142,102 +142,6 @@ void _gui_keyCallback( GLFWwindow* t_window, int t_key, int t_scancode, int t_ac
 void _glfwErrorCallback( int t_error, const char* t_desc ) {
     LogError<<"GLFW ERROR: code "<<t_error<<" msg: "<<t_desc<<LogEndl;
 }
-
-/*
-// NOT USE KHR_DEBUG MESSAGE FOR NOW. LEARN TO FILTER .. :(
-void debug_gl_callback (
-    unsigned int source,
-    unsigned int type,
-    unsigned int id,
-    unsigned int severity,
-    int length,
-    const char* message,
-    void* userParam
-    ) {
-        string src_str; 
-        string type_str;
-        string sev_str; 
-
-        switch (source) {
-        case 0x8246:
-            src_str = "API";
-            break;
-        case 0x8247:
-            src_str = "WINDOW_SYSTEM";
-            break;
-        case 0x8248:
-            src_str = "SHADER_COMPILER";
-            break;
-        case 0x8249:
-            src_str = "THIRD_PARTY";
-            break;
-        case 0x824A:
-            src_str = "APPLICATION";
-            break;
-        case 0x824B:
-            src_str = "OTHER";
-            break;
-        default:
-            src_str = "undefined";
-            break;
-        }
-
-        switch (type) {
-        case 0x824C:
-            type_str = "ERROR";
-            break;
-        case 0x824D:
-            type_str = "DEPRECATED_BEHAVIOR";
-            break;
-        case 0x824E:
-            type_str = "UNDEFINED_BEHAVIOR";
-            break;
-        case 0x824F:
-            type_str = "PORTABILITY";
-            break;
-        case 0x8250:
-            type_str = "PERFORMANCE";
-            break;
-        case 0x8251:
-            type_str = "OTHER";
-            break;
-        case 0x8268:
-            type_str = "MARKER";
-            break;
-        case 0x8269:
-            type_str = "PUSH_GROUP";
-            break;
-        case 0x826A:
-            type_str = "POP_GROUP";
-            break;
-        default:
-            type_str = "undefined";
-            break;
-        }
-
-        switch (severity) {
-        case 0x9146:
-            sev_str = "HIGH";
-            break;
-        case 0x9147:
-            sev_str = "MEDIUM";
-            break;
-        case 0x9148:
-            sev_str = "LOW";
-            break;
-        case 0x826B:
-            sev_str = "NOTIFICATION";
-            break;
-        default:
-            sev_str = "undefined";
-            break;
-        }
-
-        ostringstream oss;
-        oss<<"source "<<src_str<<" type: "<<type_str<<" id: "<<id<<" severity: "<<sev_str<<" length: "<<length<<" message: "<<message<<" userParam: "<<userParam;
-        LogError<<oss.str()<<LogEndl;
-}
-*/
 
 void _glfwWindowSizeCallback( GLFWwindow* t_win, int t_width, int t_height ) {
     g_winWidth = t_width;
@@ -347,29 +251,6 @@ void TW_CALL _getCameraPosCB( void* t_value, void* t_clientData ) {
 
     memcpy( t_value, &( cam->GetPos().x ), 3 * sizeof( float ) );
 }
-
-void TW_CALL _setObjScaleCB( const void* t_value, void* t_clientData  ) {
-    if( g_selObj == 0 )   return;
-    g_selObj->SetScales( *( ( float* )t_value ) );
-}
-
-void TW_CALL _getObjScaleCB( void* t_value, void* t_clientData  ) {
-    if( g_selObj == 0 )  return;
-
-    memcpy( t_value, &( g_selObj->GetScales() ), 3 * sizeof( float ) );
-}
-
-
-void TW_CALL _getObjCB( void* t_value, void* t_clientData  ) {
-    *( ObjType* )t_value = g_selObjType;
-}
-
-
-void TW_CALL _setObjCB( const void* t_value, void* t_clientData  ) {
-    g_selObjType = *( ObjType* )t_value;
-    g_selObj = objs[ g_selObjType ];
-}
-
 
 
 void TW_CALL _setWireModeCB(  const void* t_value, void* t_clientData ) {
@@ -520,17 +401,11 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-
-    CModel spider( &phongShader, g_model_spider, true );
-    CModel sphere( &phongShader, g_model_sphere, true );
-    CTriangle triangle( &phongShader );
-    CCube cube( &testNormalShader);
+    CModel sphere( g_model_sphere, true );
+    CCube cube;
 
 
-    triangle.SetMaterial( blinnMat );
-    spider.SetMaterial( blinnMat );
     sphere.SetMaterial( blinnMat );
-    sphere.SetShader( &testNormalShader );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -543,26 +418,9 @@ int main()
     TwDefine( " bar label='camera properties' " );
     TwDefine(" GLOBAL help='a simple demo for look at camera' ");
 
-    // select obj
-    // init objs
-    objs[ OBJ_TRIANGLE ] = &triangle;
-    objs[ OBJ_SPIDER ] = &spider;
-    objs[ OBJ_SPHERE ] = &sphere;
-    objs[ OBJ_CUBE ] = &cube;
 
-    g_selObj = objs[ g_selObjType ];
-
-    TwEnumVal objEV[NUM_OF_OBJ] = {   { OBJ_TRIANGLE,   "Triangle" }, 
-                                      { OBJ_CUBE,       "Cube" },
-                                      { OBJ_SPHERE,     "Sphere" }, 
-                                      { OBJ_SPIDER,     "Spider" }, 
-                                  };
-    TwType _TW_TYPE_OBJ = TwDefineEnum( "ObjType", objEV, NUM_OF_OBJ );
-    TwAddVarCB( bar, "Object", _TW_TYPE_OBJ, _setObjCB, _getObjCB, 0, " label='present object' help='Change object to show.' ");
 
     TwAddVarCB( bar, "wire", TW_TYPE_BOOL32, _setWireModeCB, _getWireModeCB, 0,  " label='Wireframe' help='Toggle wireframe display mode.' ");
-    TwAddVarRW( bar, "vertex color", TW_TYPE_COLOR4F, glm::value_ptr( simpleShader._vertexColor ), " label='vertex color' opened=true " );
-
     // vec struct for gui, which is mapped to a glm::vec3
     // so we don't have to steal the DIR3F type
     TwStructMember _tw_vec3Members[] = {
@@ -573,8 +431,6 @@ int main()
 
     TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
-    // model
-    TwAddVarCB( bar, "object scale", TW_TYPE_FLOAT, _setObjScaleCB, _getObjScaleCB, 0,  " label='selected object scales' step=0.01 help='selected object scales' ");
     // camera  pos   
     TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
     
@@ -594,7 +450,7 @@ int main()
     // _printSPInfo( sp );
 
     glCullFace( GL_BACK );
-    glFrontFace( GL_CW );
+    glFrontFace( GL_CCW );
 
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
@@ -604,9 +460,12 @@ int main()
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
-        if( g_selObj ) {
-            g_selObj->DrawModel();
-        }
+
+        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.5, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.5, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        cube.DrawModel( &phongShader, left );
+        sphere.DrawModel( &phongShader, right );
+
         _gui_draw();
 
         glfwSwapBuffers( window );

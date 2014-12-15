@@ -53,7 +53,7 @@ public:
 
 public:
     void BindShader();
-    virtual void BindShaderWithObjectForDrawing( CObject* t_object ) = 0;
+    virtual void BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform ) = 0;
 };
 
 
@@ -76,7 +76,7 @@ protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
-    void BindShaderWithObjectForDrawing( CObject* t_object );
+    void BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  );
 };
 
 
@@ -94,7 +94,7 @@ protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
-    void BindShaderWithObjectForDrawing( CObject* t_object );
+    void BindShaderWithObjectForDrawing( CObject* t_object, const mat4& t_trandform  );
     void SetLight( CLight* t_light  ) { _light = t_light; }
 };
 

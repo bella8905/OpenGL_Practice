@@ -14,7 +14,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject( CShader* t_shader ) : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ), _shader( t_shader ) {
+CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _material( g_defaultMat ) {
 }
 
 
@@ -23,59 +23,19 @@ CObject::~CObject(void)
 }
 
 
-// void CObject::calModelMat() {
-//     mat4 scaleMat = mat4( vec4( _scale, 0.f,      0.f,     0.f ), 
-//                           vec4( 0.f,    _scale,   0.f,     0.f ), 
-//                           vec4( 0.f,    0.f,     _scale,   0.f ), 
-//                           vec4( 0.f,    0.f,     0.f,      1.f ) );
-//     mat4 rotMat = mat4( vec4( _rot[0], 0.f ), 
-//                         vec4( _rot[1], 0.f ), 
-//                         vec4( _rot[2], 0.f ), 
-//                         vec4( 0.f, 0.f, 0.f, 1.f ) );
-//     mat4 translateMat = mat4( vec4( 1.f, 0.f, 0.f, 0.f ),
-//                               vec4( 0.f, 1.f, 0.f, 0.f ), 
-//                               vec4( 0.f, 0.f, 1.f, 0.f ), 
-//                               vec4( _translate, 1.f ) );
-// 
-//     _modelMat = translateMat * rotMat * scaleMat;
-// }
-
-void CObject::SetScales( const float& t_scales ) {
-    float scale = t_scales / _scale;
-    mat4 scaleMat = mat4(   vec4( scale, 0.f,      0.f,     0.f ), 
-                            vec4( 0.f,    scale,   0.f,     0.f ), 
-                            vec4( 0.f,    0.f,     scale,   0.f ), 
-                            vec4( 0.f,    0.f,     0.f,      1.f ) );
-
-    _modelMat = scaleMat * _modelMat;
-    _scale = t_scales;
-}
 
 bool CObject::initModel() {
-    assert( _shader );
-    _shader->BindShader();
-
     return _inited;
 }
 
-void CObject::DrawModel() {
+void CObject::DrawModel( CShader* t_shader, const mat4& t_modelMatrix ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
     }
 
-    assert( _shader );
-    _shader->BindShaderWithObjectForDrawing( this );
-}
-
-void CObject::SetShader( CShader* t_shader ) {
-    if( t_shader != _shader ) {
-        if( _inited ) {
-            // deinitModel();
-            _shader = t_shader; 
-            // initModel();
-        }
-    }
+    assert( t_shader );
+    t_shader->BindShaderWithObjectForDrawing( this, t_modelMatrix );
 }
 
 // primitive
@@ -89,9 +49,9 @@ void CPrimitive::deinitModel() {
     glDeleteBuffers( 1, &_ibo );
 }
 
-void CPrimitive::DrawModel() {
+void CPrimitive::DrawModel( CShader* t_shader, const mat4& t_modelMatrix) {
 
-    CObject::DrawModel();
+    CObject::DrawModel( t_shader, t_modelMatrix );
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
@@ -128,8 +88,8 @@ bool CTriangle::initModel() {
 
     vector<SVertex> vertices;
     vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
-    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
     vertices.push_back( SVertex( vec3( -0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
 
     vector<GLuint> indices;
     indices.push_back( 0 );
@@ -394,7 +354,7 @@ bool CModel::initModel() {
                                     vec4( _adjustedTranslate, 1.f ) );
 
         // translate the model first to center and then scale
-        _modelMat = _modelMat * scaleMat * translateMat;
+        _preprocessModelMatrix = _preprocessModelMatrix * scaleMat * translateMat;
     }
  
     _inited = true;
@@ -410,9 +370,9 @@ void CModel::deinitModel() {
     _inited = false;
 }
 
-void CModel::DrawModel() {
+void CModel::DrawModel( CShader* t_shader, const mat4& t_modelMatrix ) {
 
-    CObject::DrawModel();
+    CObject::DrawModel( t_shader, t_modelMatrix );
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();
