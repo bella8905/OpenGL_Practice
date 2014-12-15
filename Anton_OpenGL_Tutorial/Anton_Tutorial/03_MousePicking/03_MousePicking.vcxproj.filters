@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{5397e1a8-9dc5-411c-a2f6-391eb815e1a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utl">
+      <UniqueIdentifier>{3c8e54f8-d5dc-4aea-8284-e0fe9c6972a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{2cfa2023-99e0-456f-8884-4ba96ee732a5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\normal_test.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\normal_test.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\phong.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\phong.vert">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\simple.frag">
+      <Filter>shaders</Filter>
+    </None>
+    <None Include="..\shaders\simple_lookAtCam.vert">
+      <Filter>shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\00_BellaUtil\Utl_Color.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_FileStreamHandler.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_Global.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_LogMsg.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\Utl_Math.cpp">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image.c">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\00_BellaUtil\stb_image\stb_image_write.c">
+      <Filter>Utl</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Camera.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Light.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Material.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Object.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\00_BellaUtil\Utl_Color.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_FileStreamHandler.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Global.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Include.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_LogMsg.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Math.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\Utl_Time.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\00_BellaUtil\stb_image\stb_image_write.h">
+      <Filter>Utl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Camera.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Light.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Material.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Object.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shader.h">
+      <Filter>src</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

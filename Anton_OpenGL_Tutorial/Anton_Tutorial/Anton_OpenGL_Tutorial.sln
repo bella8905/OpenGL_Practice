@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01_SimpleStart", "01_Simple
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "02_VisualCamera", "02_VisualCamera\02_VisualCamera.vcxproj", "{DFFEC62E-3115-43BB-A8BD-79B488F5C0BA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "03_MousePicking", "03_MousePicking\03_MousePicking.vcxproj", "{41F80E3C-2C10-4CC6-BC04-6A71B27AD6E1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{DFFEC62E-3115-43BB-A8BD-79B488F5C0BA}.Debug|Win32.Build.0 = Debug|Win32
 		{DFFEC62E-3115-43BB-A8BD-79B488F5C0BA}.Release|Win32.ActiveCfg = Release|Win32
 		{DFFEC62E-3115-43BB-A8BD-79B488F5C0BA}.Release|Win32.Build.0 = Release|Win32
+		{41F80E3C-2C10-4CC6-BC04-6A71B27AD6E1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{41F80E3C-2C10-4CC6-BC04-6A71B27AD6E1}.Debug|Win32.Build.0 = Debug|Win32
+		{41F80E3C-2C10-4CC6-BC04-6A71B27AD6E1}.Release|Win32.ActiveCfg = Release|Win32
+		{41F80E3C-2C10-4CC6-BC04-6A71B27AD6E1}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
