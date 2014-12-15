@@ -65,10 +65,13 @@
     <ClCompile Include="src\Material.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Object.cpp">
+    <ClCompile Include="src\Shader.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Shader.cpp">
+    <ClCompile Include="Scene.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Geometry.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,10 +112,13 @@
     <ClInclude Include="src\Material.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Object.h">
+    <ClInclude Include="src\Shader.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Shader.h">
+    <ClInclude Include="Scene.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Geometry.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

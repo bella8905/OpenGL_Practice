@@ -4,6 +4,11 @@
 //
 //  Implementation of Anton's OpenGL tutorial
 //
+// a object class including vao, vbos and ibo for rendering
+// it doesn't include any transformation,  material / shader information
+// make it a singleton, and never instantiate more than 1 instances
+// pass in a transformation matrix, shader and matertial for rendering
+//
 //  Copyright (c) 2014 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
@@ -57,15 +62,12 @@ struct SBoundBox {
     }
 };
 
-// a object class including vao, vbos and ibo for rendering
-// it doesn't include any transformation,  material / shader information
-// make it a singleton, and never instantiate more than 1 instances
-// pass in a transformation matrix, shader and matertial for rendering
-class CObject
+
+class CGeo
 {
 public:
-    CObject();
-    virtual ~CObject() = 0;
+    CGeo();
+    virtual ~CGeo() = 0;
 
 protected:
     bool _inited;
@@ -75,11 +77,6 @@ protected:
     // for example, transforming a reading-in model to fit in a unit cube
     // never change it.
     glm::mat4 _preprocessModelMatrix;    
-    float _scale;       // only allow uniform scale
-//     glm::vec3 _translate;
-//     glm::mat3 _rot;
-
-    // CMaterial _material;
 
     // bound box is use to define the boundaries of the object,
     // used for ray based object picking
@@ -97,9 +94,6 @@ public:
     bool IsInited() { return _inited; }
 
     mat4& GetModelMat() { return _preprocessModelMatrix; }
-    float& GetScales() { return _scale; }
-
-
 };
 
 struct SVertex {
@@ -110,10 +104,10 @@ struct SVertex {
 };
 
 
-class CPrimitive : public CObject {
+class CPrimGeo : public CGeo {
 public:
-    CPrimitive() : _vao( 0 ), _vbo( 0 ) {}
-    ~CPrimitive() { deinitModel(); }
+    CPrimGeo() : _vao( 0 ), _vbo( 0 ) {}
+    ~CPrimGeo() { deinitModel(); }
 
 protected:
     // we need to keep track of vao loc so we can bind to it and draw our mesh later
@@ -137,20 +131,20 @@ public:
 
 
 // triangle
-class CTriangle : public CPrimitive {
+class CTriangleGeo : public CPrimGeo {
 public:
-    CTriangle() { initModel(); }
-    ~CTriangle() { deinitModel(); }
+    CTriangleGeo() { initModel(); }
+    ~CTriangleGeo() { deinitModel(); }
 
 protected:
     bool initModel();
 };
 
 // cube
-class CCube : public CPrimitive {
+class CCubeGeo : public CPrimGeo {
 public:
-    CCube() { initModel(); }
-    ~CCube() { deinitModel(); }
+    CCubeGeo() { initModel(); }
+    ~CCubeGeo() { deinitModel(); }
 
 protected:
     bool initModel();
@@ -159,10 +153,10 @@ protected:
 
 
 // a object read from a model file
-class CModel : public CObject {
+class CModelGeo : public CGeo {
 public:
-    CModel( const string& t_file, bool t_unified = false ) :  _fileName( t_file ), _unified( t_unified ) { initModel(); }
-    ~CModel() { deinitModel(); }
+    CModelGeo( const string& t_file, bool t_unified = false ) :  _fileName( t_file ), _unified( t_unified ) { initModel(); }
+    ~CModelGeo() = 0; 
 
 
     struct SMesh {
@@ -202,4 +196,20 @@ protected:
 
 public:
     virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+};
+
+
+// sphere
+class CSphereGeo : public CModelGeo {
+public:
+    CSphereGeo( bool t_unified = false ) :  CModelGeo( "../models/sphere.dae", t_unified ) {}
+    ~CSphereGeo() {}
+};
+
+
+// spider
+class CSpiderGeo: public CModelGeo {
+public:
+    CSpiderGeo( bool t_unified = false ) :  CModelGeo( "../models/spider/spider.obj", t_unified ) {}
+    ~CSpiderGeo() {}
 };

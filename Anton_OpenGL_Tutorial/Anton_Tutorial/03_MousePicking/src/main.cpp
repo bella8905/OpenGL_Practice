@@ -11,7 +11,7 @@
 #include "Utl_Include.h"
 #include "Camera.h"
 #include "Shader.h"
-#include "Object.h"
+#include "Geometry.h"
 #include "Light.h"
 #include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
@@ -31,8 +31,6 @@ int g_winHeight = 480;
 bool g_drawWireModel = false;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
-const string g_model_sphere = "../models/sphere.dae";
-const string g_model_spider = "../models/spider/spider.obj";
 
 // enum ObjType { OBJ_TRIANGLE = 0, OBJ_CUBE, OBJ_SPIDER, OBJ_SPHERE };
 // const us NUM_OF_OBJ = 4;
@@ -401,8 +399,9 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-    CModel sphere( g_model_sphere, true );
-    CCube cube;
+    CSphereGeo sphere( true );
+    CSpiderGeo spider( true );
+    CCubeGeo cube;
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -463,7 +462,7 @@ int main()
         mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
         cube.DrawModel( &testNormalShader, &blinnMat, left );
         sphere.DrawModel( &phongShader, &blinnMat, center );
-        cube.DrawModel( &simpleShader, &g_defaultMat, right );
+        spider.DrawModel( &testNormalShader, &g_defaultMat, right );
 
         _gui_draw();
 

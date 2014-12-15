@@ -8,27 +8,27 @@
 //  
 /////////////////////////////////////////////////////////////////
 
-#include "Object.h"
+#include "Geometry.h"
 #include "Shader.h"
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
 
-CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
+CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
 }
 
 
-CObject::~CObject(void)
+CGeo::~CGeo(void)
 {
 }
 
 
 
-bool CObject::initModel() {
+bool CGeo::initModel() {
     return _inited;
 }
 
-void CObject::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
@@ -39,26 +39,26 @@ void CObject::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t
 }
 
 // primitive
-bool CPrimitive::initModel() {
-    return CObject::initModel();
+bool CPrimGeo::initModel() {
+    return CGeo::initModel();
 }
 
-void CPrimitive::deinitModel() {
+void CPrimGeo::deinitModel() {
     if( !_inited )  return;
     glDeleteBuffers( 1, &_vbo );
     glDeleteBuffers( 1, &_ibo );
 }
 
-void CPrimitive::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
+void CPrimGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
 
-    CObject::DrawModel( t_shader, t_material, t_modelMatrix );
+    CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
 
 }
 
-void CPrimitive::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
+void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
 
     // generate vao and vbos
     glGenBuffers( 1, &_vbo );
@@ -81,10 +81,10 @@ void CPrimitive::genBufferData( const vector<SVertex>& t_vertices, const vector<
 }
 
 // triangle
-bool CTriangle::initModel() {
+bool CTriangleGeo::initModel() {
     LogMsg<<"Init Triangle"<<LogEndl;
     // if obj is already inited, simply return
-    if( CPrimitive::initModel() ) return true;
+    if( CPrimGeo::initModel() ) return true;
 
     vector<SVertex> vertices;
     vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
@@ -105,10 +105,10 @@ bool CTriangle::initModel() {
 }
 
 // cube
-bool CCube::initModel() {
+bool CCubeGeo::initModel() {
     LogMsg<<"Init Cube"<<LogEndl;
     // if obj is already inited, simply return
-    if( CPrimitive::initModel() ) return true;
+    if( CPrimGeo::initModel() ) return true;
 
     // cube ///////////////////////////////////////////////////////////////////////
     //    v6----- v5
@@ -165,7 +165,7 @@ bool CCube::initModel() {
 } 
 
 // model
-void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
+void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
     if( _inited )   return;
     assert( t_aiMesh );
 
@@ -267,7 +267,7 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 
 }
 
-void CModel::SMesh::DeinitMesh() {
+void CModelGeo::SMesh::DeinitMesh() {
     if( !_inited )  return;
 
 /*    if( t_aiMesh->HasPositions() ) {*/
@@ -288,16 +288,20 @@ void CModel::SMesh::DeinitMesh() {
     _inited = false;
 }
 
-void CModel::SMesh::DrawMesh() {
+void CModelGeo::SMesh::DrawMesh() {
     if( !_inited ) return;
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
 }
 
-bool CModel::initModel() {
+CModelGeo::~CModelGeo() {
+    deinitModel(); 
+}
+
+bool CModelGeo::initModel() {
     // if obj is already inited, simply return
-    if( CObject::initModel() ) return true;
+    if( CGeo::initModel() ) return true;
 
     // read from model file
     // do it in a c++ way
@@ -361,7 +365,7 @@ bool CModel::initModel() {
     return _inited;
 }
 
-void CModel::deinitModel() {
+void CModelGeo::deinitModel() {
     if( !_inited ) return;
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[i].DeinitMesh();
@@ -370,9 +374,9 @@ void CModel::deinitModel() {
     _inited = false;
 }
 
-void CModel::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CModelGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
 
-    CObject::DrawModel( t_shader, t_material, t_modelMatrix );
+    CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();

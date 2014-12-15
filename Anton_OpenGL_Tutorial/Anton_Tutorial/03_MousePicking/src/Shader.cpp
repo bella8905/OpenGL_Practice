@@ -13,7 +13,7 @@
 #include <streambuf>
 
 #include "Shader.h"
-#include "Object.h"
+#include "Geometry.h"
 #include "Light.h"
 #include "Utl_Include.h"
 
@@ -304,7 +304,7 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
 }
 
 // bind perspective camera shader specific content for drawing
-void CPerspCamShader::BindShaderWithObjectForDrawing( CObject* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
+void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
     assert( t_object  );
     CShader::BindShader();
 
@@ -353,7 +353,7 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
 
 
 // bind phong shader specific content for drawing
-void CPhongShader::BindShaderWithObjectForDrawing( CObject* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
+void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
     assert( t_object && _light && t_material );
     CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 
