@@ -594,7 +594,7 @@ int main()
     // _printSPInfo( sp );
 
     glCullFace( GL_BACK );
-    glFrontFace( GL_CW );
+    glFrontFace( GL_CCW );
 
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
