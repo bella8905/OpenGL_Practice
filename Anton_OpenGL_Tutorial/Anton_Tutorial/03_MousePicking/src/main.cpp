@@ -461,10 +461,12 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
 
-        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.5, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.5, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        cube.DrawModel( &phongShader, left );
-        sphere.DrawModel( &phongShader, right );
+        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );;
+        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        cube.DrawModel( &testNormalShader, left );
+        sphere.DrawModel( &phongShader, center );
+        cube.DrawModel( &simpleShader, right );
 
         _gui_draw();
 

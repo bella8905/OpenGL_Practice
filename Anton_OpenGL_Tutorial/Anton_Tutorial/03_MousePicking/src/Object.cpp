@@ -14,7 +14,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _material( g_defaultMat ) {
+CObject::CObject() : _inited( false ), _scale( 1.0f ), _preprocessModelMatrix( 1.f ), _material( g_defaultMat ), _drawBoundBox( false ) {
 }
 
 

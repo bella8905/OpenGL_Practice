@@ -21,6 +21,42 @@ class CShader;
 using std::vector;
 using std::string;  
 
+struct SBoundBox {
+    vec3 _min, _max;
+
+    void SetBounds( const vec3& t_point ) {
+        _min.x = ( t_point.x < _min.x ) ? t_point.x : _min.x;
+        _min.y = ( t_point.y < _min.y ) ? t_point.y : _min.y;
+        _min.z = ( t_point.z < _min.z ) ? t_point.z : _min.z;
+        _max.x = ( t_point.x > _max.x ) ? t_point.x : _max.x;
+        _max.y = ( t_point.y > _max.y ) ? t_point.y : _max.y;
+        _max.z = ( t_point.z > _max.z ) ? t_point.z : _max.z;
+    }
+
+    void SetBounds( const SBoundBox& t_bounds ) {
+        _min.x = min( _min.x, t_bounds._min.x);
+        _min.y = min( _min.y, t_bounds._min.y);
+        _min.z = min( _min.z, t_bounds._min.z);
+        _max.x = max( _max.x, t_bounds._max.x);
+        _max.y = max( _max.y, t_bounds._max.y);
+        _max.z = max( _max.z, t_bounds._max.z);
+    }
+
+    vec3 GetCenter() {
+        return ( _min + _max ) * 0.5f;
+    }
+
+    float GetLongestSide() {
+        float length = -1;
+        for( int i = 0; i < 3; ++i ) {
+            float sideLength = _max[i] - _min[i];
+            length = max( sideLength, length );
+        }
+
+        return length;
+    }
+};
+
 // a object class including vao, vbos and ibo for rendering
 // make it a singleton, and never instantiate more than 1 instances
 // pass in a transformation matrix for rendering
@@ -43,6 +79,12 @@ protected:
 //     glm::mat3 _rot;
 
     CMaterial _material;
+
+    // bound box is use to define the boundaries of the object,
+    // used for ray based object picking
+    SBoundBox _boundBox;
+    bool _drawBoundBox;
+
 protected:
     virtual bool initModel();
     virtual void deinitModel() = 0; // delete buffer, etc
@@ -123,41 +165,6 @@ public:
     CModel( const string& t_file, bool t_unified = false ) :  _fileName( t_file ), _unified( t_unified ) { initModel(); }
     ~CModel() { deinitModel(); }
 
-    struct SBoundBox {
-        vec3 _min, _max;
-
-        void SetBounds( const vec3& t_point ) {
-            _min.x = ( t_point.x < _min.x ) ? t_point.x : _min.x;
-            _min.y = ( t_point.y < _min.y ) ? t_point.y : _min.y;
-            _min.z = ( t_point.z < _min.z ) ? t_point.z : _min.z;
-            _max.x = ( t_point.x > _max.x ) ? t_point.x : _max.x;
-            _max.y = ( t_point.y > _max.y ) ? t_point.y : _max.y;
-            _max.z = ( t_point.z > _max.z ) ? t_point.z : _max.z;
-        }
-
-        void SetBounds( const SBoundBox& t_bounds ) {
-            _min.x = min( _min.x, t_bounds._min.x);
-            _min.y = min( _min.y, t_bounds._min.y);
-            _min.z = min( _min.z, t_bounds._min.z);
-            _max.x = max( _max.x, t_bounds._max.x);
-            _max.y = max( _max.y, t_bounds._max.y);
-            _max.z = max( _max.z, t_bounds._max.z);
-        }
-
-        vec3 GetCenter() {
-            return ( _min + _max ) * 0.5f;
-        }
-
-        float GetLongestSide() {
-            float length = -1;
-            for( int i = 0; i < 3; ++i ) {
-                float sideLength = _max[i] - _min[i];
-                length = max( sideLength, length );
-            }
-
-            return length;
-        }
-    };
 
     struct SMesh {
         // don't have reference to ass scene, the scene is already freed at mesh destructor time
