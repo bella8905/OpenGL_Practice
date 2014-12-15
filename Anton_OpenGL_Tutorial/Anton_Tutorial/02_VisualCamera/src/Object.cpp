@@ -78,28 +78,32 @@ void CObject::SetShader( CShader* t_shader ) {
     }
 }
 
-// triangle
-bool CTriangle::initModel() {
-    // if obj is already inited, simply return
-    if( CObject::initModel() ) return true;
+// primitive
+bool CPrimitive::initModel() {
+    return CObject::initModel();
+}
 
-    struct SVertex {
-        vec3 _pos;
-        vec3 _normal;
+void CPrimitive::deinitModel() {
+    if( !_inited )  return;
+    glDeleteBuffers( 1, &_vbo );
+    glDeleteBuffers( 1, &_ibo );
+}
 
-        SVertex( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
-    };
+void CPrimitive::DrawModel() {
 
-    vector<SVertex> vertices;
-    vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
-    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
-    vertices.push_back( SVertex( vec3( -0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    CObject::DrawModel();
 
+    glBindVertexArray( _vao );
+    glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
+
+}
+
+void CPrimitive::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
 
     // generate vao and vbos
     glGenBuffers( 1, &_vbo );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * vertices.size(), &vertices[0], GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * t_vertices.size(), &t_vertices[0], GL_STATIC_DRAW );
 
     glGenVertexArrays( 1, &_vao );
     glBindVertexArray( _vao );
@@ -110,24 +114,95 @@ bool CTriangle::initModel() {
     glEnableVertexAttribArray( 0 );
     glEnableVertexAttribArray( 1 );
 
+    glGenBuffers( 1, &_ibo );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &t_indices[0], GL_STATIC_DRAW );
+
+}
+
+// triangle
+bool CTriangle::initModel() {
+    LogMsg<<"Init Triangle"<<LogEndl;
+    // if obj is already inited, simply return
+    if( CPrimitive::initModel() ) return true;
+
+    vector<SVertex> vertices;
+    vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vertices.push_back( SVertex( vec3( -0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+
+    vector<GLuint> indices;
+    indices.push_back( 0 );
+    indices.push_back( 1 );
+    indices.push_back( 2 );
+
+    _numOfIndices = indices.size();
+    genBufferData( vertices, indices );
+
     _inited = true;
 
     return _inited;
 }
 
-void CTriangle::deinitModel() {
-    if( !_inited )  return;
-    glDeleteBuffers( 1, &_vbo );
-}
+// cube
+bool CCube::initModel() {
+    LogMsg<<"Init Cube"<<LogEndl;
+    // if obj is already inited, simply return
+    if( CPrimitive::initModel() ) return true;
 
-void CTriangle::DrawModel() {
+    // cube ///////////////////////////////////////////////////////////////////////
+    //    v6----- v5
+    //   /|      /|
+    //  v1------v0|
+    //  | |     | |
+    //  | |v7---|-|v4
+    //  |/      |/
+    //  v2------v3
 
-    CObject::DrawModel();
+    float cubeVertices[] = {
+        0.5,0.5,0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  0.5,-0.5,0.5,      // v0-v1-v2-v3
+        0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,  0.5,0.5,-0.5,      // v0-v3-v4-v5
+        0.5,0.5,0.5,  0.5,0.5,-0.5,  -0.5,0.5,-0.5,  -0.5,0.5,0.5,      // v0-v5-v6-v1
+        -0.5,0.5,0.5,  -0.5,0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,-0.5,0.5,		// v1-v6-v7-v2
+        -0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,		// v7-v4-v3-v2
+        0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,0.5,-0.5,  0.5,0.5,-0.5 };		// v4-v7-v6-v5
 
-    glBindVertexArray( _vao );
-    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    float cubeNormals[] = {
+        0,0,1,  0,0,1,  0,0,1,  0,0,1,             // v0-v1-v2-v3
+        1,0,0,  1,0,0,  1,0,0, 1,0,0,              // v0-v3-v4-v5
+        0,1,0,  0,1,0,  0,1,0, 0,1,0,              // v0-v5-v6-v1
+        -1,0,0,  -1,0,0, -1,0,0,  -1,0,0,          // v1-v6-v7-v2
+        0,-1,0,  0,-1,0,  0,-1,0,  0,-1,0,        // v7-v4-v3-v2
+        0,0,-1,  0,0,-1,  0,0,-1,  0,0,-1 };        // v4-v7-v6-v5
 
-}
+
+    int numOfVertices = sizeof( cubeVertices ) / sizeof( float ) / 3;
+
+    vector<SVertex> vertices;
+    for( int i = 0; i < numOfVertices; ++ i ) {
+        int startIndex = 3 * i;
+        vertices.push_back( SVertex( vec3( cubeVertices[ startIndex ], cubeVertices[ startIndex + 1 ], cubeVertices[ startIndex + 2 ] ), 
+                                     vec3( cubeNormals[ startIndex ], cubeNormals[ startIndex + 1 ], cubeNormals[ startIndex + 2 ] ) ) );
+    }
+
+    vector<GLuint> indices;
+    GLuint cubeIndices [] = {
+        0,1,2,  0,2,3,  4,5,6,  4,6,7,
+        8,9,10, 8,10,11, 12,13,14, 12,14,15,
+        16,17,18, 16,18,19,	20,21,22, 20,22,23
+    };
+
+    _numOfIndices = sizeof( cubeIndices ) / sizeof( GLuint );
+    for( int i = 0; i < _numOfIndices; ++i ) {
+        indices.push_back( cubeIndices[i] );
+    }
+
+    genBufferData( vertices, indices );
+
+    _inited = true;
+
+    return _inited;
+} 
 
 // model
 void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
@@ -139,6 +214,7 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 
     _hasTex = t_aiMesh->HasTextureCoords(0);
     _hasFaces = t_aiMesh->HasFaces();
+    assert( _hasFaces );  // weird enough if we don't have faces in this model
 
 
     glGenVertexArrays( 1, &_vao );
@@ -212,7 +288,7 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
 
 
     // ibo
-    if( _hasFaces ) {
+/*    if( _hasFaces ) {*/
         vector<GLuint> indices;
         for( unsigned int i = 0; i < t_aiMesh->mNumFaces; ++i ) {
             const aiFace* face = &( t_aiMesh->mFaces[ i ] );
@@ -225,7 +301,7 @@ void CModel::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
         glGenBuffers( 1, &_ibo );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &indices[0], GL_STATIC_DRAW );
-    }
+/*    }*/
 
     _inited = true;
 
@@ -245,9 +321,9 @@ void CModel::SMesh::DeinitMesh() {
         glDeleteBuffers( 1, &_tbo );
     }
 
-    if( _hasFaces ) {
+/*    if( _hasFaces ) {*/
         glDeleteBuffers( 1, &_ibo );
-    }
+/*    }*/
 
     _inited = false;
 }

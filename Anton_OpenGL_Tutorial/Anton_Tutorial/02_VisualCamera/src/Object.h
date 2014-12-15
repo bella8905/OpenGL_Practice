@@ -56,12 +56,18 @@ public:
 
 };
 
+struct SVertex {
+    vec3 _pos;
+    vec3 _normal;
+
+    SVertex( const vec3& t_pos, const vec3& t_normal ) : _pos( t_pos ), _normal( t_normal ) {}
+};
 
 
-class CTriangle : public CObject {
+class CPrimitive : public CObject {
 public:
-    CTriangle( CShader* t_shader ) : CObject( t_shader ), _vao( 0 ), _vbo( 0 ) { initModel(); }
-    ~CTriangle() { deinitModel(); }
+    CPrimitive( CShader* t_shader ) : CObject( t_shader ), _vao( 0 ), _vbo( 0 ) {}
+    ~CPrimitive() { deinitModel(); }
 
 protected:
     // we need to keep track of vao loc so we can bind to it and draw our mesh later
@@ -70,13 +76,40 @@ protected:
     // http://stackoverflow.com/questions/14274860/does-gldeletevertexarrays-lead-to-deletion-of-vbos-associated-with-vao-being-de
     GLuint _vao;
     GLuint _vbo;    // use a single buffer obj for pos and normal  
+    GLuint _ibo;    // we'd like to use drawElement rather than drawArray. It saves space and is faster.
+    int _numOfIndices;
+
 protected:
-    bool initModel();
+    virtual bool initModel() = 0; 
     void deinitModel();
+
+    void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
     virtual void DrawModel();
 };
+
+
+// triangle
+class CTriangle : public CPrimitive {
+public:
+    CTriangle( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    ~CTriangle() { deinitModel(); }
+
+protected:
+    bool initModel();
+};
+
+// cube
+class CCube : public CPrimitive {
+public:
+    CCube( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    ~CCube() { deinitModel(); }
+
+protected:
+    bool initModel();
+};
+
 
 
 // a object read from a model file

@@ -34,9 +34,9 @@ const string g_imageFilePrefix = "images/screenshot_";
 const string g_model_sphere = "../models/sphere.dae";
 const string g_model_spider = "../models/spider/spider.obj";
 
-enum ObjType { OBJ_TRIANGLE = 0, OBJ_SPIDER, OBJ_SPHERE };
-const us NUM_OF_OBJ = 3;
-ObjType g_selObjType = OBJ_TRIANGLE;
+enum ObjType { OBJ_TRIANGLE = 0, OBJ_CUBE, OBJ_SPIDER, OBJ_SPHERE };
+const us NUM_OF_OBJ = 4;
+ObjType g_selObjType = OBJ_SPHERE;
 CObject* objs[ NUM_OF_OBJ ];
 CObject* g_selObj = 0;
 
@@ -523,13 +523,13 @@ int main()
 
     CModel spider( &phongShader, g_model_spider, true );
     CModel sphere( &phongShader, g_model_sphere, true );
-    CTriangle triangle( &phongShader );   
+    CTriangle triangle( &phongShader );
+    CCube cube( &testNormalShader);
 
 
     triangle.SetMaterial( blinnMat );
     spider.SetMaterial( blinnMat );
     sphere.SetMaterial( blinnMat );
-
     sphere.SetShader( &testNormalShader );
     
     // init scenes
@@ -548,10 +548,12 @@ int main()
     objs[ OBJ_TRIANGLE ] = &triangle;
     objs[ OBJ_SPIDER ] = &spider;
     objs[ OBJ_SPHERE ] = &sphere;
+    objs[ OBJ_CUBE ] = &cube;
 
     g_selObj = objs[ g_selObjType ];
 
-    TwEnumVal objEV[NUM_OF_OBJ] = { { OBJ_TRIANGLE,   "Triangle" }, 
+    TwEnumVal objEV[NUM_OF_OBJ] = {   { OBJ_TRIANGLE,   "Triangle" }, 
+                                      { OBJ_CUBE,       "Cube" },
                                       { OBJ_SPHERE,     "Sphere" }, 
                                       { OBJ_SPIDER,     "Spider" }, 
                                   };
