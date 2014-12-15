@@ -521,16 +521,15 @@ int main()
 
     // geos
 
-    CModel spider( &phongShader, g_model_spider, true );
-    CModel sphere( &phongShader, g_model_sphere, true );
-    CTriangle triangle( &phongShader );
-    CCube cube( &testNormalShader);
+    CModel spider( g_model_spider, true );
+    CModel sphere( g_model_sphere, true );
+    CTriangle triangle;
+    CCube cube;
 
 
     triangle.SetMaterial( blinnMat );
     spider.SetMaterial( blinnMat );
     sphere.SetMaterial( blinnMat );
-    sphere.SetShader( &testNormalShader );
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -605,7 +604,7 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
         if( g_selObj ) {
-            g_selObj->DrawModel();
+            g_selObj->DrawModel( &phongShader );
         }
         _gui_draw();
 

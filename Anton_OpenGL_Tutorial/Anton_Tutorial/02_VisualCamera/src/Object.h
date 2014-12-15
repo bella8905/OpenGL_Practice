@@ -24,7 +24,7 @@ using std::string;
 class CObject
 {
 public:
-    CObject( CShader* t_shader );
+    CObject();
     virtual ~CObject() = 0;
 
 protected:
@@ -34,7 +34,7 @@ protected:
     float _scale;       // only allow uniform scale
 //     glm::vec3 _translate;
 //     glm::mat3 _rot;
-    CShader* _shader;
+    // CShader* _shader;
 
     CMaterial _material;
 protected:
@@ -43,8 +43,7 @@ protected:
     // void calModelMat();
 
 public:
-    void SetShader( CShader* t_shader );
-    virtual void DrawModel();
+    virtual void DrawModel( CShader* t_shader );
     bool IsInited() { return _inited; }
 
     mat4& GetModelMat() { return _modelMat; }
@@ -66,7 +65,7 @@ struct SVertex {
 
 class CPrimitive : public CObject {
 public:
-    CPrimitive( CShader* t_shader ) : CObject( t_shader ), _vao( 0 ), _vbo( 0 ) {}
+    CPrimitive() : _vao( 0 ), _vbo( 0 ) {}
     ~CPrimitive() { deinitModel(); }
 
 protected:
@@ -86,14 +85,14 @@ protected:
     void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
-    virtual void DrawModel();
+    virtual void DrawModel( CShader* t_shader );
 };
 
 
 // triangle
 class CTriangle : public CPrimitive {
 public:
-    CTriangle( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    CTriangle() { initModel(); }
     ~CTriangle() { deinitModel(); }
 
 protected:
@@ -103,7 +102,7 @@ protected:
 // cube
 class CCube : public CPrimitive {
 public:
-    CCube( CShader* t_shader ) : CPrimitive( t_shader ) { initModel(); }
+    CCube() { initModel(); }
     ~CCube() { deinitModel(); }
 
 protected:
@@ -115,7 +114,7 @@ protected:
 // a object read from a model file
 class CModel : public CObject {
 public:
-    CModel( CShader* t_shader, const string& t_file, bool t_unified = false ) : CObject( t_shader ), _fileName( t_file ), _unified( t_unified ) { initModel(); }
+    CModel( const string& t_file, bool t_unified = false ) :  _fileName( t_file ), _unified( t_unified ) { initModel(); }
     ~CModel() { deinitModel(); }
 
     struct SBoundBox {
@@ -190,5 +189,5 @@ protected:
     void deinitModel();
 
 public:
-    virtual void DrawModel();
+    virtual void DrawModel( CShader* t_shader );
 };

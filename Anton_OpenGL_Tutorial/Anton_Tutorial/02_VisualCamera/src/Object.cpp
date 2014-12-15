@@ -14,7 +14,7 @@
 #include "assimp/postprocess.h"
 
 
-CObject::CObject( CShader* t_shader ) : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ), _shader( t_shader ) {
+CObject::CObject() : _inited( false ), _scale( 1.0f ), _modelMat( 1.f ), _material( g_defaultMat ) {
 }
 
 
@@ -52,31 +52,22 @@ void CObject::SetScales( const float& t_scales ) {
 }
 
 bool CObject::initModel() {
-    assert( _shader );
-    _shader->BindShader();
+    // assert( _shader );
+    // _shader->BindShader();
 
     return _inited;
 }
 
-void CObject::DrawModel() {
+void CObject::DrawModel( CShader* t_shader ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
     }
 
-    assert( _shader );
-    _shader->BindShaderWithObjectForDrawing( this );
+    assert( t_shader );
+    t_shader->BindShaderWithObjectForDrawing( this );
 }
 
-void CObject::SetShader( CShader* t_shader ) {
-    if( t_shader != _shader ) {
-        if( _inited ) {
-            // deinitModel();
-            _shader = t_shader; 
-            // initModel();
-        }
-    }
-}
 
 // primitive
 bool CPrimitive::initModel() {
@@ -89,9 +80,9 @@ void CPrimitive::deinitModel() {
     glDeleteBuffers( 1, &_ibo );
 }
 
-void CPrimitive::DrawModel() {
+void CPrimitive::DrawModel( CShader* t_shader ) {
 
-    CObject::DrawModel();
+    CObject::DrawModel( t_shader );
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
@@ -410,9 +401,9 @@ void CModel::deinitModel() {
     _inited = false;
 }
 
-void CModel::DrawModel() {
+void CModel::DrawModel( CShader* t_shader ) {
 
-    CObject::DrawModel();
+    CObject::DrawModel( t_shader );
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();
