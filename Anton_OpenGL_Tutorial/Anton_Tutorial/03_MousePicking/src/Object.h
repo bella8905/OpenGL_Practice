@@ -10,25 +10,27 @@
 //  Copyright (c) 2014 Bella Q
 //  
 /////////////////////////////////////////////////////////////////
+#pragma once
+
 #include "Utl_Include.h"
 #include "Material.h"
+#include "Geometry.h"
 
 class CShader;
 
-#pragma once
 class CObj
 {
 public:
-    CObj(void);
-    virtual ~CObj(void);
+    CObj();
+    virtual ~CObj();
 
-protected:
-    mat4 _modelMat;
+public:
+    GEO_TYPE _type;
     CMaterial _material;
+    mat4 _modelMat;
     CShader* _shader;
 
 public:
-    void SetShader( CShader )
-
+    void DrawObj();    
 };
 

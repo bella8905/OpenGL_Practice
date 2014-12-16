@@ -387,3 +387,57 @@ void CModelGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4&
         _meshes[ i ].DrawMesh();
     }
 }
+
+
+// geo container
+
+CGeoContainer::CGeoContainer() : _inited( false ) { 
+    for( us i = 0; i < GEO_COUNTER; ++i ) {
+        _geos[ i ] = 0;
+    }
+}
+
+void CGeoContainer::Init() {
+    if( _inited ) {
+        LogError<<"geo container already inited"<<LogEndl;
+        return;
+    }
+
+    _geos[ GEO_TRIANGLE  ] = new CTriangleGeo();
+    _geos[ GEO_CUBE  ] = new CCubeGeo();
+    _geos[ GEO_SPHERE  ] = new CSphereGeo( true );
+    _geos[ GEO_SPIDER  ] = new CSpiderGeo( true );
+
+    _inited = true;
+    
+}
+
+void CGeoContainer::Deinit() {
+    if( !_inited ) {
+        LogError<<"geo container not inited"<<LogEndl;
+        return;
+    }
+
+    for( us i = 0 ; i < GEO_COUNTER; ++i ) {
+        if( _geos[i] ) {
+            delete _geos[i];
+            _geos[i] = 0;
+        }
+    }
+
+    _inited = false;
+}
+
+void CGeoContainer::DrawGeo( GEO_TYPE t_type, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+    if( !_inited ) {
+        LogError<<"geo container not inited"<<LogEndl;
+        return;
+    }
+
+    if( !_geos[ t_type ] ) {
+        LogError<<"geo not inited in geo container"<<LogEndl;
+        return;
+    }
+
+    _geos[ t_type ]->DrawModel( t_shader, t_material, t_modelMatrix );
+}

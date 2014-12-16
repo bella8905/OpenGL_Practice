@@ -26,6 +26,8 @@ class CShader;
 using std::vector;
 using std::string;  
 
+enum GEO_TYPE { GEO_TRIANGLE = 0, GEO_CUBE, GEO_SPHERE, GEO_SPIDER, GEO_COUNTER };
+
 struct SBoundBox {
     vec3 _min, _max;
 
@@ -212,4 +214,26 @@ class CSpiderGeo: public CModelGeo {
 public:
     CSpiderGeo( bool t_unified = false ) :  CModelGeo( "../models/spider/spider.obj", t_unified ) {}
     ~CSpiderGeo() {}
+};
+
+
+// a interface to get all possible geos we have 
+class CGeoContainer {
+private:
+    CGeoContainer();
+
+private:
+    CGeo* _geos[ GEO_COUNTER ];
+    bool _inited;
+
+public:
+    static CGeoContainer& GetInstance() {
+        static CGeoContainer instance;
+        return instance;
+    }
+
+    void Init();
+    void Deinit();
+
+    void DrawGeo( GEO_TYPE t_type, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
 };

@@ -32,12 +32,6 @@ bool g_drawWireModel = false;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
 
-// enum ObjType { OBJ_TRIANGLE = 0, OBJ_CUBE, OBJ_SPIDER, OBJ_SPHERE };
-// const us NUM_OF_OBJ = 4;
-// ObjType g_selObjType = OBJ_SPHERE;
-// CObject* objs[ NUM_OF_OBJ ];
-// CObject* g_selObj = 0;
-
 ///////////////////////////////////////////////
 // GUI : AntTweakBar
 // wrapper function for GLFW3 integration
@@ -380,7 +374,6 @@ int main()
 
     // Shader 
     CPerspCamShader simpleShader( &simpleCam );
-    // simpleShader.BindShader();
 
     // phong shader
     CPhongShader phongShader( &simpleCam );
@@ -399,9 +392,8 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-    CSphereGeo sphere( true );
-    CSpiderGeo spider( true );
-    CCubeGeo cube;
+    CGeoContainer geos = CGeoContainer::GetInstance();
+    geos.Init();
     
     // init scenes
     ////////////////////////////////////////////////////////
@@ -457,12 +449,13 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
 
-        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );;
-        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        cube.DrawModel( &testNormalShader, &blinnMat, left );
-        sphere.DrawModel( &phongShader, &blinnMat, center );
-        spider.DrawModel( &testNormalShader, &g_defaultMat, right );
+        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+
+        geos.DrawGeo( GEO_CUBE, &testNormalShader, &blinnMat, left );
+        geos.DrawGeo( GEO_SPHERE, &phongShader, &blinnMat, center );
+        geos.DrawGeo( GEO_SPIDER, &testNormalShader, &g_defaultMat, right );
 
         _gui_draw();
 
@@ -482,6 +475,8 @@ int main()
     // Terminate AntTweakBar and GLFW
     _gui_deinit();
     glfwTerminate();
+
+    geos.Deinit();
 
     return 1;
 }
