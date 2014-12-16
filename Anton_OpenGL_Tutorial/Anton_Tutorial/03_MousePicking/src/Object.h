@@ -21,7 +21,7 @@ class CShader;
 class CObj
 {
 public:
-    CObj();
+    CObj( GEO_TYPE t_type );
     virtual ~CObj();
 
 public:

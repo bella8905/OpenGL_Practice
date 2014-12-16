@@ -13,6 +13,7 @@
 #include "Shader.h"
 #include "Geometry.h"
 #include "Light.h"
+#include "Scene.h"
 #include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
 
@@ -395,8 +396,32 @@ int main()
     CGeoContainer geos = CGeoContainer::GetInstance();
     geos.Init();
     
+
+    mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+    mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+    mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+    CScene testScene;
+    // cube 
+    CObj obj_cube( GEO_CUBE );
+    obj_cube._modelMat = left;
+    obj_cube._shader = &testNormalShader;
+    testScene.AddObj( obj_cube );
+
+    CObj obj_sphere( GEO_SPHERE );
+    obj_sphere._modelMat = center;
+    obj_sphere._shader = &testNormalShader;
+    testScene.AddObj( obj_sphere );
+
+
+    CObj obj_spider( GEO_SPIDER );
+    obj_spider._modelMat = right;
+    obj_spider._shader = &testNormalShader;
+    testScene.AddObj( obj_spider );
+    
+
     // init scenes
     ////////////////////////////////////////////////////////
+
 
 
     // twbar
@@ -449,13 +474,7 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
 
-        mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-        mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-
-        geos.DrawGeo( GEO_CUBE, &testNormalShader, &blinnMat, left );
-        geos.DrawGeo( GEO_SPHERE, &phongShader, &blinnMat, center );
-        geos.DrawGeo( GEO_SPIDER, &testNormalShader, &g_defaultMat, right );
+        testScene.DrawScene();
 
         _gui_draw();
 
