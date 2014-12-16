@@ -95,3 +95,6 @@ void CSimpleCamera::SetPos( const vec3& t_newPos ) {
     _pos = t_newPos;
     calViewMat();
 }
+
+
+ CSimpleCamera g_simpleCam;

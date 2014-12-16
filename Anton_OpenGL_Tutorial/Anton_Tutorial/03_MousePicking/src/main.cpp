@@ -347,7 +347,8 @@ int main()
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LESS );
 
-
+    CShaderContainer::GetInstance().Init();
+    CGeoContainer::GetInstance().Init();
     ////////////////////////////////////////////////////////
     // init scenes
     // camera
@@ -362,8 +363,7 @@ int main()
     float clipFOV = 60.f;
     float clipAspect = ( float )g_winWidth / ( float )g_winHeight;
 
-    CSimpleCamera simpleCam;
-    simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
+    g_simpleCam.Setup( camPos, camFace, camUp, clipNear, clipFar, clipFOV, clipAspect );
 
     // light
     vec3 lightPos( 0.f, 0.f, 2.f );
@@ -371,17 +371,7 @@ int main()
     vec3 lightLd( 0.7f, 0.7f, 0.7f );
     vec3 lightLa( 0.2f, 0.2f, 0.2f );
 
-    CLight simpleLight( lightPos, lightLs, lightLd, lightLa );
-
-    // Shader 
-    CPerspCamShader simpleShader( &simpleCam );
-
-    // phong shader
-    CPhongShader phongShader( &simpleCam );
-    phongShader.SetLight( &simpleLight );
-
-    // normal test shader
-    CTestNormalShader testNormalShader( &simpleCam  );
+    g_simpleLight.Setup( lightPos, lightLs, lightLd, lightLa );
 
     // material
     bool hasSpecular = true;
@@ -393,7 +383,6 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-    CGeoContainer::GetInstance().Init();
 
     mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
     mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
@@ -402,18 +391,19 @@ int main()
     // cube 
     CObj obj_cube( GEO_CUBE );
     obj_cube._modelMat = left;
-    obj_cube._shader = &testNormalShader;
+    obj_cube._shaderType = SD_NORMAL_TEST;
     testScene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_SPHERE );
+    obj_sphere._material = blinnMat;
     obj_sphere._modelMat = center;
-    obj_sphere._shader = &testNormalShader;
+    obj_sphere._shaderType = SD_PHONG;
     testScene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_SPIDER );
     obj_spider._modelMat = right;
-    obj_spider._shader = &testNormalShader;
+    obj_spider._shaderType = SD_NORMAL_TEST;
     testScene.AddObj( obj_spider );
     
 
@@ -443,7 +433,7 @@ int main()
     TwType _TW_TYPE_VEC3F = TwDefineStruct( "Position", _tw_vec3Members, 3, sizeof(glm::vec3), NULL, NULL );
     
     // camera  pos   
-    TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &simpleCam ),  " label='camera position' opened=true help='camera position' ");
+    TwAddVarCB( bar, "camPos", _TW_TYPE_VEC3F, _setCameraPosCB, _getCameraPosCB, ( void* )( &g_simpleCam ),  " label='camera position' opened=true help='camera position' ");
     
 
     // - Directly redirect GLFW mouse button events to AntTweakBar
@@ -494,6 +484,7 @@ int main()
     glfwTerminate();
 
     CGeoContainer::GetInstance().Deinit();
+    CShaderContainer::GetInstance().Deinit();
 
     return 1;
 }

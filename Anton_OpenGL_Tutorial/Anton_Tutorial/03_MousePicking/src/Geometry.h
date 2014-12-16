@@ -20,8 +20,7 @@
 #include "assimp/scene.h"
 #include "Utl_Include.h"
 #include "Material.h"
-
-class CShader;
+#include "Shader.h"
 
 using std::vector;
 using std::string;  
@@ -84,8 +83,11 @@ protected:
     // used for ray based object picking
     SBoundBox _boundBox;        // bound box when we haven't done any transformation( passed in model matrix is identical )
     bool _drawBoundBox;
-    GLuint _vbo_boundBox, _ibo_boundBox;
-    us _numOfIndices_boundBox;
+
+    // use same buffers to draw bound box for all models
+    static GLuint _vbo_boundBox, _ibo_boundBox;
+    static us _numOfIndices_boundBox;
+    static bool _inited_boundBox;
 
 protected:
     virtual bool initModel();
@@ -94,10 +96,15 @@ protected:
 
 public:
     // draw an instance of the object using a model matrix
-    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
     bool IsInited() { return _inited; }
 
-    mat4& GetModelMat() { return _preprocessModelMatrix; }
+    mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
+
+
+    // init / deinit boundbox buffers, only do it once
+    static void InitBoundBox();
+    static void DeinitBoundBox();
 };
 
 struct SVertex {
@@ -130,7 +137,7 @@ protected:
     void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
-    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
 };
 
 
@@ -199,7 +206,7 @@ protected:
     void deinitModel();
 
 public:
-    virtual void DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
 };
 
 
@@ -239,5 +246,5 @@ public:
     void Init();
     void Deinit();
 
-    void DrawGeo( GEO_TYPE t_type, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    void DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix );
 };

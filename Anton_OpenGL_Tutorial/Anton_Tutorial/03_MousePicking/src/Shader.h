@@ -61,8 +61,8 @@ public:
 // a simple shader which creates a perspective view
 class CPerspCamShader : public CShader {
 public:
-    CPerspCamShader( CCamera* t_cam );
-    ~CPerspCamShader() {}
+    CPerspCamShader();
+    ~CPerspCamShader() = 0;
 
 public:
     // uniform variable names
@@ -78,12 +78,19 @@ protected:
 
 public:
     void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  );
+    void SetCamera( CCamera* t_camera ) { _camera = t_camera; }
+};
+
+class CSingleColorShader : public CPerspCamShader {
+public:
+    CSingleColorShader();
+    ~CSingleColorShader() {} 
 };
 
 
 class CPhongShader : public CPerspCamShader {
 public:
-    CPhongShader( CCamera* t_cam );
+    CPhongShader();
     ~CPhongShader() {} 
 
 protected:
@@ -95,14 +102,49 @@ protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
 
 public:
-    void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  );
+    void BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_transform  );
     void SetLight( CLight* t_light  ) { _light = t_light; }
 };
 
 
 class CTestNormalShader : public CPerspCamShader {
 public:
-    CTestNormalShader( CCamera* t_cam );
+    CTestNormalShader();
     ~CTestNormalShader() {} 
 
+};
+
+
+// a shader used to draw object bound box
+// class CBBShader: public CPerspCamShader {
+// public:
+//     CTestNormalShader();
+//     ~CTestNormalShader() {} 
+// };
+
+
+
+// shader container
+// a interface to get all possible shaders we have 
+enum SHADER_TYPE { SD_SINGLE_COLOR, SD_PHONG, SD_NORMAL_TEST ,SD_COUNTER };
+class CShaderContainer {
+private:
+    CShaderContainer();
+    CShaderContainer( const CShaderContainer& t_cont );
+    void operator=( const CShaderContainer& t_cont );
+
+private:
+    CShader* _shaders[ SD_COUNTER ];
+    bool _inited;
+
+public:
+    static CShaderContainer& GetInstance() {
+        static CShaderContainer instance;
+        return instance;
+    }
+
+    void Init();
+    void Deinit();
+
+    void BindShaderForDrawing( SHADER_TYPE t_type, CGeo* t_object, CMaterial* t_material, const mat4& t_transform );
 };

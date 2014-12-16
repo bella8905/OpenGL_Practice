@@ -61,3 +61,6 @@ public:
     CFPSCamera() {}
     ~CFPSCamera() {}
 };
+
+
+extern CSimpleCamera g_simpleCam;

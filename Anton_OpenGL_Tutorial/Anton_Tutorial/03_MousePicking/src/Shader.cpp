@@ -266,6 +266,12 @@ void CShader::BindShader()
 }
 
 void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
+    // every init sp call goes here, make sure we don't create multiple sps
+    if( _inited ) {
+        LogError<<"shader program already inited"<<LogEndl;
+        return;
+    }
+    
     _vs = t_vs;
     _fs = t_fs;
     _gs = t_gs;
@@ -277,16 +283,15 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 //////////////////////////////////////////////////////////
 // a simple perspective camera shader
 
-const std::string PERSP_CAM_SHADER_VS_FILE = "../shaders/simple_lookAtCam.vert";
-const std::string PERSP_CAM_SHADER_FS_FILE = "../shaders/simple.frag";
-
-CPerspCamShader::CPerspCamShader( CCamera* t_cam ) :  _camera( t_cam ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
+CPerspCamShader::CPerspCamShader() :  _camera( 0 ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
-    initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
+    // initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
+}
+
+CPerspCamShader::~CPerspCamShader() {
 }
 
 void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
-    assert( _camera != 0 );
 
     CShader::initSP( t_vs, t_fs, t_gs, t_ts );
     
@@ -297,15 +302,12 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
     _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
     assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc >= 0 );
 
-    // attributes
-/*    _attr_pos = 0;*/
-
     _inited = true;
 }
 
 // bind perspective camera shader specific content for drawing
 void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
-    assert( t_object  );
+    assert( t_object && _camera );
     CShader::BindShader();
 
     if( _uni_inputColorLoc >= 0 ) {
@@ -314,9 +316,20 @@ void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial*
 
     glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetViewMat() ) );
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
-    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_trandform * t_object->GetModelMat() ) );
+    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_trandform * t_object->GetPreProcessedModelMat() ) );
 }
 
+
+//////////////////////////////////////////////////////////
+// single color shader
+const std::string SINGLE_COLOR_SHADER_VS_FILE = "../shaders/simple_lookAtCam.vert";
+const std::string SINGLE_COLOR_SHADER_FS_FILE = "../shaders/simple.frag";
+
+
+CSingleColorShader::CSingleColorShader()
+{
+    initSP( SINGLE_COLOR_SHADER_VS_FILE, SINGLE_COLOR_SHADER_FS_FILE );
+}
 
 //////////////////////////////////////////////////////////
 // phone shader
@@ -324,15 +337,14 @@ const std::string PHONG_SHADER_VS_FILE = "../shaders/phong.vert";
 const std::string PHONG_SHADER_FS_FILE = "../shaders/phong.frag";
 
 
-CPhongShader::CPhongShader( CCamera* t_cam ) : CPerspCamShader( t_cam ), _light( 0 ), 
-                                               _uni_lightPos( -1 ), _uni_lightLs( -1 ), _uni_lightLd( -1 ), _uni_lightLa( -1 ), 
-                                               _uni_mtlKs( -1 ), _uni_mtlKd( -1 ), _uni_mtlKa( -1 ), _uni_mtlSplExp( -1 ) 
+CPhongShader::CPhongShader() :  _light( 0 ), 
+                                _uni_lightPos( -1 ), _uni_lightLs( -1 ), _uni_lightLd( -1 ), _uni_lightLa( -1 ), 
+                                _uni_mtlKs( -1 ), _uni_mtlKd( -1 ), _uni_mtlKa( -1 ), _uni_mtlSplExp( -1 ) 
 {
     initSP( PHONG_SHADER_VS_FILE, PHONG_SHADER_FS_FILE );
 }
 
 void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
-    assert( _camera != 0 );
 
     CPerspCamShader::initSP( t_vs, t_fs, t_gs, t_ts );
 
@@ -384,9 +396,71 @@ const std::string NORTEST_SHADER_VS_FILE = "../shaders/normal_test.vert";
 const std::string NORTEST_SHADER_FS_FILE = "../shaders/normal_test.frag";
 
 
-CTestNormalShader::CTestNormalShader( CCamera* t_cam ) : CPerspCamShader( t_cam )
+CTestNormalShader::CTestNormalShader()
 {
     initSP( NORTEST_SHADER_VS_FILE, NORTEST_SHADER_FS_FILE );
 }
 
 
+/////////////////////////////////////////
+// shader container
+CShaderContainer::CShaderContainer() {
+    for( us i = 0; i < SD_COUNTER; ++i ) {
+        _shaders[i] = 0;
+    }
+}
+
+
+void CShaderContainer::Init() {
+    if( _inited ) {
+        LogError<<"shader container already inited"<<LogEndl;
+        return;
+    }
+
+    CSingleColorShader* singlecolor = new CSingleColorShader();
+    singlecolor->SetCamera( &g_simpleCam );
+    _shaders[ SD_SINGLE_COLOR ] = singlecolor;
+
+    CPhongShader* phong = new CPhongShader();
+    phong->SetCamera( &g_simpleCam );
+    phong->SetLight( &g_simpleLight );
+    _shaders[ SD_PHONG ] = phong;
+
+    CTestNormalShader* normaltest = new CTestNormalShader();
+    normaltest->SetCamera( &g_simpleCam );
+    _shaders[ SD_NORMAL_TEST ] = normaltest;
+
+    _inited = true;
+}
+
+
+void CShaderContainer::Deinit() {
+    if( !_inited ) {
+        LogError<<"shader container not inited"<<LogEndl;
+        return;
+    }
+
+    for( us i = 0 ; i < SD_COUNTER; ++i ) {
+        if( _shaders[i] ) {
+            delete _shaders[i];
+            _shaders[i] = 0;
+        }
+    }
+
+
+    _inited = false;
+}
+
+void CShaderContainer::BindShaderForDrawing( SHADER_TYPE t_type, CGeo* t_object, CMaterial* t_material, const mat4& t_transform ) {
+    if( !_inited ) {
+        LogError<<"shader container not inited"<<LogEndl;
+        return;
+    }
+
+    if( !_shaders[ t_type ] ) {
+        LogError<<"shader not inited in shader container"<<LogEndl;
+        return;
+    }
+
+    _shaders[t_type]->BindShaderWithObjectForDrawing( t_object, t_material, t_transform );
+}

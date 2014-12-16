@@ -15,8 +15,7 @@
 #include "Utl_Include.h"
 #include "Material.h"
 #include "Geometry.h"
-
-class CShader;
+#include "Shader.h"
 
 class CObj
 {
@@ -25,10 +24,11 @@ public:
     virtual ~CObj();
 
 public:
-    GEO_TYPE _type;
+    GEO_TYPE _geoType;
     CMaterial _material;
     mat4 _modelMat;
-    CShader* _shader;
+    // CShader* _shader;
+    SHADER_TYPE _shaderType;
 
 public:
     void DrawObj();    

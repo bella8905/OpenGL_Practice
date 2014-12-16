@@ -18,8 +18,12 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
+GLuint CGeo::_vbo_boundBox = 0;
+GLuint CGeo::_ibo_boundBox = 0;
+us CGeo::_numOfIndices_boundBox = 0;
+bool CGeo::_inited_boundBox = false;  
 
-CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) ,_vbo_boundBox( 0 ), _ibo_boundBox( 0 ) {
+CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
 }
 
 
@@ -28,9 +32,11 @@ CGeo::~CGeo(void)
 }
 
 
-
-bool CGeo::initModel() {
-    if( _inited ) return true;
+void CGeo::InitBoundBox() {
+    if( _inited_boundBox ) {
+        LogError<<"bound box already inited" <<LogEndl;
+        return;
+    }
 
     // get boundbox vertices from _boundbox
     // int bound box vbo and ibo
@@ -60,29 +66,47 @@ bool CGeo::initModel() {
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox);
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices_boundBox * sizeof( GLuint ), cubeIndices, GL_STATIC_DRAW );
 
+    _inited_boundBox = true;
+}
+
+void CGeo::DeinitBoundBox() {
+    if( !_inited_boundBox ) {
+        LogError<<"bound box not inited"<<LogEndl;
+        return;
+    }
+
+    glDeleteBuffers( 1, &_vbo_boundBox );
+    glDeleteBuffers( 1, &_ibo_boundBox );
+
+    _inited_boundBox = false;
+}
+
+bool CGeo::initModel() {
+    if( _inited ) return true;
+
     return _inited;
 }
 
 void CGeo::deinitModel()  {
     if( !_inited )  return;
-    glDeleteBuffers( 1, &_vbo_boundBox );
-    glDeleteBuffers( 1, &_ibo_boundBox );
-
 }
 
-void CGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
     }
 
     assert( t_shader );
-    t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
 
     // bound box
     if( _drawBoundBox ) {
+        // bind bound box shader and draw bind box
 
     }
+
+    CShaderContainer::GetInstance().BindShaderForDrawing( t_shader, this, t_material, t_modelMatrix );
+    // t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
 }
 
 // primitive
@@ -98,7 +122,7 @@ void CPrimGeo::deinitModel() {
     CGeo::deinitModel();
 }
 
-void CPrimGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
+void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
 
     CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
 
@@ -425,7 +449,7 @@ void CModelGeo::deinitModel() {
     _inited = false;
 }
 
-void CModelGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CModelGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
 
     CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
 
@@ -449,6 +473,9 @@ void CGeoContainer::Init() {
         return;
     }
 
+    //  init bound box 
+    CGeo::InitBoundBox();
+
     _geos[ GEO_TRIANGLE  ] = new CTriangleGeo();
     _geos[ GEO_CUBE  ] = new CCubeGeo();
     _geos[ GEO_SPHERE  ] = new CSphereGeo( true );
@@ -471,19 +498,22 @@ void CGeoContainer::Deinit() {
         }
     }
 
+    //  deinit bound box 
+    CGeo::DeinitBoundBox();
+
     _inited = false;
 }
 
-void CGeoContainer::DrawGeo( GEO_TYPE t_type, CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CGeoContainer::DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix ) {
     if( !_inited ) {
         LogError<<"geo container not inited"<<LogEndl;
         return;
     }
 
-    if( !_geos[ t_type ] ) {
+    if( !_geos[ t_geoType ] ) {
         LogError<<"geo not inited in geo container"<<LogEndl;
         return;
     }
 
-    _geos[ t_type ]->DrawModel( t_shader, t_material, t_modelMatrix );
+    _geos[ t_geoType ]->DrawModel( t_shaderType, t_material, t_modelMatrix );
 }

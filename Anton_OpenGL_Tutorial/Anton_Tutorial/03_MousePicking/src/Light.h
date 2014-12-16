@@ -16,6 +16,7 @@
 class CLight
 {
 public:
+    CLight();
     CLight( const vec3& t_pos, const vec3& t_ls, const vec3& t_ld, const vec3& t_la );
     virtual ~CLight(void);
 
@@ -26,6 +27,7 @@ protected:
     vec3 _la;     // ambient light color
 
 public:
+    void Setup( const vec3& t_pos, const vec3& t_ls, const vec3& t_ld, const vec3& t_la  );
     vec3& GetPos() { return _pos; }
     void SetPos(const vec3& t_val) { _pos = t_val; }
     vec3& GetLa() { return _la; }
@@ -36,3 +38,4 @@ public:
     void SetLs(const vec3& t_val) { _ls = t_val; }
 };
 
+extern CLight g_simpleLight;
