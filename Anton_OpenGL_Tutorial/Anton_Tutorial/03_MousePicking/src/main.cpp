@@ -393,9 +393,7 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-    CGeoContainer geos = CGeoContainer::GetInstance();
-    geos.Init();
-    
+    CGeoContainer::GetInstance().Init();
 
     mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
     mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
@@ -495,7 +493,7 @@ int main()
     _gui_deinit();
     glfwTerminate();
 
-    geos.Deinit();
+    CGeoContainer::GetInstance().Deinit();
 
     return 1;
 }

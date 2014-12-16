@@ -19,7 +19,7 @@
 #include "assimp/postprocess.h"
 
 
-CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
+CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) ,_vbo_boundBox( 0 ), _ibo_boundBox( 0 ) {
 }
 
 
@@ -30,7 +30,44 @@ CGeo::~CGeo(void)
 
 
 bool CGeo::initModel() {
+    if( _inited ) return true;
+
+    // get boundbox vertices from _boundbox
+    // int bound box vbo and ibo
+    float cubeVertices[] = {
+        0.5,0.5,0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  0.5,-0.5,0.5,      // v0-v1-v2-v3
+        0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,  0.5,0.5,-0.5,      // v0-v3-v4-v5
+        0.5,0.5,0.5,  0.5,0.5,-0.5,  -0.5,0.5,-0.5,  -0.5,0.5,0.5,      // v0-v5-v6-v1
+        -0.5,0.5,0.5,  -0.5,0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,-0.5,0.5,		// v1-v6-v7-v2
+        -0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,		// v7-v4-v3-v2
+        0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,0.5,-0.5,  0.5,0.5,-0.5 };		// v4-v7-v6-v5
+
+    int numOfVertices = sizeof( cubeVertices ) / sizeof( float ) / 3;
+
+    GLuint cubeIndices [] = {
+        0,1,2,  0,2,3,  4,5,6,  4,6,7,
+        8,9,10, 8,10,11, 12,13,14, 12,14,15,
+        16,17,18, 16,18,19,	20,21,22, 20,22,23
+    };
+
+    _numOfIndices_boundBox = sizeof( cubeIndices ) / sizeof( GLuint );
+
+    glGenBuffers( 1, &_vbo_boundBox );
+    glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * sizeof( cubeVertices ), cubeVertices, GL_STATIC_DRAW );
+
+    glGenBuffers( 1, &_ibo_boundBox );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox);
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices_boundBox * sizeof( GLuint ), cubeIndices, GL_STATIC_DRAW );
+
     return _inited;
+}
+
+void CGeo::deinitModel()  {
+    if( !_inited )  return;
+    glDeleteBuffers( 1, &_vbo_boundBox );
+    glDeleteBuffers( 1, &_ibo_boundBox );
+
 }
 
 void CGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
@@ -41,6 +78,11 @@ void CGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_mo
 
     assert( t_shader );
     t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
+
+    // bound box
+    if( _drawBoundBox ) {
+
+    }
 }
 
 // primitive
@@ -52,6 +94,8 @@ void CPrimGeo::deinitModel() {
     if( !_inited )  return;
     glDeleteBuffers( 1, &_vbo );
     glDeleteBuffers( 1, &_ibo );
+
+    CGeo::deinitModel();
 }
 
 void CPrimGeo::DrawModel( CShader* t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
@@ -375,6 +419,8 @@ void CModelGeo::deinitModel() {
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[i].DeinitMesh();
     }
+
+    CGeo::deinitModel();
 
     _inited = false;
 }

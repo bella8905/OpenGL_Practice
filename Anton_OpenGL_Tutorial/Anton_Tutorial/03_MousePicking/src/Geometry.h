@@ -73,7 +73,7 @@ public:
 
 protected:
     bool _inited;
-/*    GLuint _vao;*/
+    
     // a preprocessed model matrix, 
     // this is for transforming the model to a more meaningful status
     // for example, transforming a reading-in model to fit in a unit cube
@@ -82,8 +82,10 @@ protected:
 
     // bound box is use to define the boundaries of the object,
     // used for ray based object picking
-    SBoundBox _boundBox;
+    SBoundBox _boundBox;        // bound box when we haven't done any transformation( passed in model matrix is identical )
     bool _drawBoundBox;
+    GLuint _vbo_boundBox, _ibo_boundBox;
+    us _numOfIndices_boundBox;
 
 protected:
     virtual bool initModel();
@@ -221,6 +223,8 @@ public:
 class CGeoContainer {
 private:
     CGeoContainer();
+    CGeoContainer( const CGeoContainer& t_cont );
+    void operator=( const CGeoContainer& t_cont );
 
 private:
     CGeo* _geos[ GEO_COUNTER ];
