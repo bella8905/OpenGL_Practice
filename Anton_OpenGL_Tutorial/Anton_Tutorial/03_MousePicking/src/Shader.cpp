@@ -251,13 +251,13 @@ void CShader::createShaderProgram() {
 
     _sp = createShaderProgram( vs, gs, ts, fs );  
     
-    _inited = true;
+    _spCreated = true;
 }
 
 // tell everyone we are going to use the shader
 void CShader::BindShader()
 {
-    if( !_inited ) {
+    if( !_spCreated ) {
         LogError<<"shader not inited"<<LogEndl;
         return;
     }
@@ -267,7 +267,7 @@ void CShader::BindShader()
 
 void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs, const std::string& t_ts ) {
     // every init sp call goes here, make sure we don't create multiple sps
-    if( _inited ) {
+    if( _spCreated ) {
         LogError<<"shader program already inited"<<LogEndl;
         return;
     }
@@ -302,21 +302,21 @@ void CPerspCamShader::initSP( const std::string& t_vs, const std::string& t_fs, 
     _uni_modelMatLoc = glGetUniformLocation( _sp, "model" );
     assert( /*_uni_inputColorLoc >= 0 && */_uni_projMatLoc >= 0 && _uni_viewMatLoc >= 0 && _uni_modelMatLoc >= 0 );
 
-    _inited = true;
 }
 
 // bind perspective camera shader specific content for drawing
 void CPerspCamShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
-    assert( t_object && _camera );
+    assert(  _camera );
     CShader::BindShader();
 
     if( _uni_inputColorLoc >= 0 ) {
         glUniform4fv( _uni_inputColorLoc, 1, glm::value_ptr( _vertexColor ) );
     }
 
+    mat4 modelMat = ( t_object ) ? ( t_trandform * t_object->GetPreProcessedModelMat() ) : t_trandform; 
     glUniformMatrix4fv( _uni_viewMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetViewMat() ) );
     glUniformMatrix4fv( _uni_projMatLoc, 1, GL_FALSE, glm::value_ptr( _camera->GetProjMat() ) );
-    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( t_trandform * t_object->GetPreProcessedModelMat() ) );
+    glUniformMatrix4fv( _uni_modelMatLoc, 1, GL_FALSE, glm::value_ptr( modelMat ) );
 }
 
 
@@ -360,13 +360,12 @@ void CPhongShader::initSP( const std::string& t_vs, const std::string& t_fs, con
     assert( _uni_lightPos >= 0 && _uni_lightLs >= 0 && _uni_lightLd >= 0 && _uni_lightLa >= 0 && 
             _uni_mtlKs >= 0 && _uni_mtlKd >= 0 && _uni_mtlKa >= 0 && _uni_mtlSplExp >= 0 );
 
-    _inited = true;
 }
 
 
 // bind phong shader specific content for drawing
 void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_material, const mat4& t_trandform  ) {
-    assert( t_object && _light && t_material );
+    assert(  _light && t_material  );
     CPerspCamShader::BindShaderWithObjectForDrawing( t_object, t_material, t_trandform );
 
     glUniform3fv( _uni_lightPos, 1, glm::value_ptr( _light->GetPos() ) );
@@ -391,7 +390,8 @@ void CPhongShader::BindShaderWithObjectForDrawing( CGeo* t_object, CMaterial* t_
 
 
 
-
+//////////////////////////////////////////////////////////
+// normal test shader
 const std::string NORTEST_SHADER_VS_FILE = "../shaders/normal_test.vert";
 const std::string NORTEST_SHADER_FS_FILE = "../shaders/normal_test.frag";
 

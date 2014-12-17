@@ -31,6 +31,6 @@ public:
     SHADER_TYPE _shaderType;
 
 public:
-    void DrawObj();    
+    void DrawObj( bool t_drawBB = false );    
 };
 

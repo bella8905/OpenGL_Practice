@@ -21,13 +21,13 @@ class CShader
 {
 public:
     // CShader( const string& t_vs, const string& t_fs );
-    CShader() : _inited( false ), _sp(0) {}
+    CShader() : _spCreated( false ), _sp(0) {}
     virtual ~CShader() {}
 
 protected:
     std::string _vs, _fs, _ts, _gs;
     GLuint _sp;
-    bool _inited;
+    bool _spCreated;
 
 protected:
     virtual void initSP( const std::string& t_vs, const std::string& t_fs, const std::string& t_gs = "", const std::string& t_ts = "" );
@@ -107,20 +107,13 @@ public:
 };
 
 
-class CTestNormalShader : public CPerspCamShader {
+
+// a shader used to draw object bound box
+class CTestNormalShader: public CPerspCamShader {
 public:
     CTestNormalShader();
     ~CTestNormalShader() {} 
-
 };
-
-
-// a shader used to draw object bound box
-// class CBBShader: public CPerspCamShader {
-// public:
-//     CTestNormalShader();
-//     ~CTestNormalShader() {} 
-// };
 
 
 

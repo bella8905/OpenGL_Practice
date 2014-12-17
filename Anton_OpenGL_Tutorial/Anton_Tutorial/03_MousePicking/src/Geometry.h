@@ -29,6 +29,15 @@ enum GEO_TYPE { GEO_TRIANGLE = 0, GEO_CUBE, GEO_SPHERE, GEO_SPIDER, GEO_COUNTER 
 
 struct SBoundBox {
     vec3 _min, _max;
+    vec3 _sideLentghs;
+    vec3 _center;
+
+    void setSideLengths() {
+        float length = -1;
+        for( int i = 0; i < 3; ++i ) {
+            _sideLentghs[i] = _max[i] - _min[i];
+        }
+    }
 
     void SetBounds( const vec3& t_point ) {
         _min.x = ( t_point.x < _min.x ) ? t_point.x : _min.x;
@@ -37,6 +46,9 @@ struct SBoundBox {
         _max.x = ( t_point.x > _max.x ) ? t_point.x : _max.x;
         _max.y = ( t_point.y > _max.y ) ? t_point.y : _max.y;
         _max.z = ( t_point.z > _max.z ) ? t_point.z : _max.z;
+
+        _center = ( _min + _max ) * 0.5f;
+        setSideLengths();
     }
 
     void SetBounds( const SBoundBox& t_bounds ) {
@@ -46,11 +58,11 @@ struct SBoundBox {
         _max.x = max( _max.x, t_bounds._max.x);
         _max.y = max( _max.y, t_bounds._max.y);
         _max.z = max( _max.z, t_bounds._max.z);
+
+        _center = ( _min + _max ) * 0.5f;
+        setSideLengths();
     }
 
-    vec3 GetCenter() {
-        return ( _min + _max ) * 0.5f;
-    }
 
     float GetLongestSide() {
         float length = -1;
@@ -61,6 +73,15 @@ struct SBoundBox {
 
         return length;
     }
+
+    SBoundBox() : _min( vec3( std::numeric_limits<float>::infinity() ) ), _max( vec3( -std::numeric_limits<float>::infinity() ) ) {
+    }
+
+    void Reset() {
+        _min = vec3( std::numeric_limits<float>::infinity() );
+        _max = vec3( -std::numeric_limits<float>::infinity() );
+    }
+    
 };
 
 
@@ -82,7 +103,7 @@ protected:
     // bound box is use to define the boundaries of the object,
     // used for ray based object picking
     SBoundBox _boundBox;        // bound box when we haven't done any transformation( passed in model matrix is identical )
-    bool _drawBoundBox;
+    // bool _drawBoundBox;
 
     // use same buffers to draw bound box for all models
     static GLuint _vbo_boundBox, _ibo_boundBox;
@@ -96,7 +117,7 @@ protected:
 
 public:
     // draw an instance of the object using a model matrix
-    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
     bool IsInited() { return _inited; }
 
     mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
@@ -137,7 +158,7 @@ protected:
     void genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices  );
 
 public:
-    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 };
 
 
@@ -206,7 +227,7 @@ protected:
     void deinitModel();
 
 public:
-    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix );
+    virtual void DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 };
 
 
@@ -246,5 +267,5 @@ public:
     void Init();
     void Deinit();
 
-    void DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix );
+    void DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
 };

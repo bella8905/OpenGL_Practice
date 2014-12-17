@@ -11,6 +11,6 @@ CObj::~CObj()
 }
 
 
-void CObj::DrawObj() {
-    CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat );
+void CObj::DrawObj( bool t_drawBB ) {
+    CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, t_drawBB );
 }

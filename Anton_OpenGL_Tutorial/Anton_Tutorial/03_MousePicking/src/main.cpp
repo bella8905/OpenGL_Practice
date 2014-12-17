@@ -394,10 +394,10 @@ int main()
     obj_cube._shaderType = SD_NORMAL_TEST;
     testScene.AddObj( obj_cube );
 
-    CObj obj_sphere( GEO_SPHERE );
-    obj_sphere._material = blinnMat;
+    CObj obj_sphere( GEO_TRIANGLE  );
+    // obj_sphere._material = blinnMat;
     obj_sphere._modelMat = center;
-    obj_sphere._shaderType = SD_PHONG;
+    obj_sphere._shaderType = SD_SINGLE_COLOR;
     testScene.AddObj( obj_sphere );
 
 

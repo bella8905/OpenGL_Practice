@@ -23,7 +23,7 @@ GLuint CGeo::_ibo_boundBox = 0;
 us CGeo::_numOfIndices_boundBox = 0;
 bool CGeo::_inited_boundBox = false;  
 
-CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ), _drawBoundBox( false ) {
+CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ) {
 }
 
 
@@ -41,30 +41,35 @@ void CGeo::InitBoundBox() {
     // get boundbox vertices from _boundbox
     // int bound box vbo and ibo
     float cubeVertices[] = {
-        0.5,0.5,0.5,  -0.5,0.5,0.5,  -0.5,-0.5,0.5,  0.5,-0.5,0.5,      // v0-v1-v2-v3
-        0.5,0.5,0.5,  0.5,-0.5,0.5,  0.5,-0.5,-0.5,  0.5,0.5,-0.5,      // v0-v3-v4-v5
-        0.5,0.5,0.5,  0.5,0.5,-0.5,  -0.5,0.5,-0.5,  -0.5,0.5,0.5,      // v0-v5-v6-v1
-        -0.5,0.5,0.5,  -0.5,0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,-0.5,0.5,		// v1-v6-v7-v2
-        -0.5,-0.5,-0.5,  0.5,-0.5,-0.5,  0.5,-0.5,0.5,  -0.5,-0.5,0.5,		// v7-v4-v3-v2
-        0.5,-0.5,-0.5,  -0.5,-0.5,-0.5,  -0.5,0.5,-0.5,  0.5,0.5,-0.5 };		// v4-v7-v6-v5
+        -0.5, -0.5, -0.5,
+        0.5, -0.5, -0.5, 
+        0.5,  0.5, -0.5, 
+        -0.5,  0.5, -0.5, 
+        -0.5, -0.5,  0.5, 
+        0.5, -0.5,  0.5, 
+        0.5,  0.5,  0.5, 
+        -0.5,  0.5,  0.5, 
+    };
 
     int numOfVertices = sizeof( cubeVertices ) / sizeof( float ) / 3;
 
-    GLuint cubeIndices [] = {
-        0,1,2,  0,2,3,  4,5,6,  4,6,7,
-        8,9,10, 8,10,11, 12,13,14, 12,14,15,
-        16,17,18, 16,18,19,	20,21,22, 20,22,23
+    GLushort cubeIndices [] = {
+        0, 1, 2, 3,
+        4, 5, 6, 7,
+        0, 4, 1, 5, 2, 6, 3, 7
     };
 
-    _numOfIndices_boundBox = sizeof( cubeIndices ) / sizeof( GLuint );
+    _numOfIndices_boundBox = sizeof( cubeIndices ) / sizeof( GLushort );
 
     glGenBuffers( 1, &_vbo_boundBox );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
     glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * sizeof( cubeVertices ), cubeVertices, GL_STATIC_DRAW );
+    glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+
 
     glGenBuffers( 1, &_ibo_boundBox );
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox);
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices_boundBox * sizeof( GLuint ), cubeIndices, GL_STATIC_DRAW );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices_boundBox * sizeof( GLushort ), cubeIndices, GL_STATIC_DRAW );
 
     _inited_boundBox = true;
 }
@@ -91,7 +96,7 @@ void CGeo::deinitModel()  {
     if( !_inited )  return;
 }
 
-void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
     if( !_inited ) {
         LogError<<"model not inited"<<LogEndl;
         return;
@@ -100,13 +105,33 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
     assert( t_shader );
 
     // bound box
-    if( _drawBoundBox ) {
+    if( t_drawBB ) {
         // bind bound box shader and draw bind box
+        // don't need object and material for single color shader
+        // but we need to recalcuate the bound box model matrix
+        // translate and then scale the unit box to transform it to bb
+        mat4 scaleMat = mat4(   vec4( _boundBox._sideLentghs[0], 0.f,            0.f,            0.f ), 
+                                vec4( 0.f,            _boundBox._sideLentghs[1], 0.f,            0.f ), 
+                                vec4( 0.f,            0.f,            _boundBox._sideLentghs[2], 0.f ), 
+                                vec4( 0.f,            0.f,            0.f,            1.f ) );
+
+        mat4 translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
+                                    vec4( 0.f, 1.f, 0.f, 0.f ), 
+                                    vec4( 0.f, 0.f, 1.f, 0.f ), 
+                                    vec4( _boundBox._center, 1.f ) );
+
+        mat4 bbTfmMat = t_modelMatrix * scaleMat * translateMat;
+        CShaderContainer::GetInstance().BindShaderForDrawing( SD_SINGLE_COLOR, 0, 0, bbTfmMat );
+        glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
+
+
+        glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, NULL );
+        glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, ( GLvoid* )( 4 * sizeof( GLushort ) ) );
+        glDrawElements( GL_LINES, 8, GL_UNSIGNED_SHORT, ( GLvoid* )( 8*sizeof( GLushort ) ) );
 
     }
 
     CShaderContainer::GetInstance().BindShaderForDrawing( t_shader, this, t_material, t_modelMatrix );
-    // t_shader->BindShaderWithObjectForDrawing( this, t_material, t_modelMatrix );
 }
 
 // primitive
@@ -122,9 +147,9 @@ void CPrimGeo::deinitModel() {
     CGeo::deinitModel();
 }
 
-void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix) {
+void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
 
-    CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
+    CGeo::DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
 
     glBindVertexArray( _vao );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
@@ -160,9 +185,18 @@ bool CTriangleGeo::initModel() {
     if( CPrimGeo::initModel() ) return true;
 
     vector<SVertex> vertices;
-    vertices.push_back( SVertex( vec3( 0.0f, 0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
-    vertices.push_back( SVertex( vec3( -0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
-    vertices.push_back( SVertex( vec3( 0.5f, -0.5f, 0.0f ), vec3( 0.f, 0.f, 1.f ) ) );
+    vec3 point = vec3( 0.0f, 0.5f, 0.0f );
+    vec3 normal = vec3( 0.f, 0.f, 1.f );
+    vertices.push_back( SVertex( point, normal ) );
+    _boundBox.SetBounds( point );
+
+    point = vec3( -0.5f, -0.5f, 0.0f );
+    vertices.push_back( SVertex( point, normal ) );
+    _boundBox.SetBounds( point );
+
+    point = vec3( 0.5f, -0.5f, 0.0f );
+    vertices.push_back( SVertex( point, normal ) );
+    _boundBox.SetBounds( point );
 
     vector<GLuint> indices;
     indices.push_back( 0 );
@@ -216,6 +250,8 @@ bool CCubeGeo::initModel() {
         int startIndex = 3 * i;
         vertices.push_back( SVertex( vec3( cubeVertices[ startIndex ], cubeVertices[ startIndex + 1 ], cubeVertices[ startIndex + 2 ] ), 
                                      vec3( cubeNormals[ startIndex ], cubeNormals[ startIndex + 1 ], cubeNormals[ startIndex + 2 ] ) ) );
+
+        _boundBox.SetBounds( vec3( cubeVertices[ startIndex ], cubeVertices[ startIndex + 1 ], cubeVertices[ startIndex + 2 ] ) );
     }
 
     vector<GLuint> indices;
@@ -264,13 +300,13 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
             points.push_back( ( GLfloat )point->z );
 
             if( t_unified ) {
-                if( i == 0 ) {
-                    _bounds._min = vec3( point->x, point->y, point->z );
-                    _bounds._max = vec3( point->x, point->y, point->z );
-                }
-                else {
+//                 if( i == 0 ) {
+//                     _bounds._min = vec3( point->x, point->y, point->z );
+//                     _bounds._max = vec3( point->x, point->y, point->z );
+//                 }
+//                 else {
                     _bounds.SetBounds( vec3( point->x, point->y, point->z ) );
-                }
+//                }
             }
         }
 
@@ -407,17 +443,17 @@ bool CModelGeo::initModel() {
         _meshes.push_back( mesh );
 
         if( _unified ) {
-           if( i == 0 ) {
-               bounds = mesh._bounds;
-           }
-           else {
+//            if( i == 0 ) {
+//                bounds = mesh._bounds;
+//            }
+//            else {
                bounds.SetBounds( mesh._bounds );
-           }
+//           }
         }
     }
 
     if( _unified ) {
-        _adjustedTranslate = -bounds.GetCenter();
+        _adjustedTranslate = -bounds._center;
         _adjustedScale = 2.f / bounds.GetLongestSide();
 
         mat4 scaleMat = mat4(   vec4( _adjustedScale, 0.f,            0.f,            0.f ), 
@@ -449,9 +485,9 @@ void CModelGeo::deinitModel() {
     _inited = false;
 }
 
-void CModelGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CModelGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
 
-    CGeo::DrawModel( t_shader, t_material, t_modelMatrix );
+    CGeo::DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
 
     for( unsigned int i = 0; i < _meshes.size(); ++i ) {
         _meshes[ i ].DrawMesh();
@@ -504,7 +540,7 @@ void CGeoContainer::Deinit() {
     _inited = false;
 }
 
-void CGeoContainer::DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix ) {
+void CGeoContainer::DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
     if( !_inited ) {
         LogError<<"geo container not inited"<<LogEndl;
         return;
@@ -515,5 +551,5 @@ void CGeoContainer::DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMate
         return;
     }
 
-    _geos[ t_geoType ]->DrawModel( t_shaderType, t_material, t_modelMatrix );
+    _geos[ t_geoType ]->DrawModel( t_shaderType, t_material, t_modelMatrix, t_drawBB );
 }
