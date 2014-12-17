@@ -14,7 +14,7 @@ CScene::~CScene()
 
 void CScene::DrawScene() {
     for( us i = 0 ; i < _objects.size(); ++i ) {
-        _objects[i].DrawObj( false );
+        _objects[i].DrawObj();
     }
 }
 

@@ -30,7 +30,9 @@ public:
     // CShader* _shader;
     SHADER_TYPE _shaderType;
 
+    bool _drawBB;
+
 public:
-    void DrawObj( bool t_drawBB = false );    
+    void DrawObj();    
 };
 

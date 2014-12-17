@@ -18,6 +18,7 @@
 #include "assimp/Importer.hpp"
 #include "assimp/postprocess.h"
 
+GLuint CGeo::_vao_boundBox = 0;
 GLuint CGeo::_vbo_boundBox = 0;
 GLuint CGeo::_ibo_boundBox = 0;
 us CGeo::_numOfIndices_boundBox = 0;
@@ -40,18 +41,17 @@ void CGeo::InitBoundBox() {
 
     // get boundbox vertices from _boundbox
     // int bound box vbo and ibo
-    float cubeVertices[] = {
-        -0.5, -0.5, -0.5,
-        0.5, -0.5, -0.5, 
-        0.5,  0.5, -0.5, 
-        -0.5,  0.5, -0.5, 
-        -0.5, -0.5,  0.5, 
-        0.5, -0.5,  0.5, 
-        0.5,  0.5,  0.5, 
-        -0.5,  0.5,  0.5, 
+    GLfloat cubeVertices[] = {
+        -0.5f, -0.5f, -0.5f,
+        0.5f, -0.5f, -0.5f, 
+        0.5f,  0.5f, -0.5f, 
+        -0.5f,  0.5f, -0.5f, 
+        -0.5f, -0.5f,  0.5f, 
+        0.5f, -0.5f,  0.5f, 
+        0.5f,  0.5f,  0.5f, 
+        -0.5f,  0.5f,  0.5f, 
     };
 
-    int numOfVertices = sizeof( cubeVertices ) / sizeof( float ) / 3;
 
     GLushort cubeIndices [] = {
         0, 1, 2, 3,
@@ -59,17 +59,23 @@ void CGeo::InitBoundBox() {
         0, 4, 1, 5, 2, 6, 3, 7
     };
 
-    _numOfIndices_boundBox = sizeof( cubeIndices ) / sizeof( GLushort );
+    glGenVertexArrays( 1, &_vao_boundBox );
+    glBindVertexArray( _vao_boundBox  );
+
 
     glGenBuffers( 1, &_vbo_boundBox );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
-    glBufferData( GL_ARRAY_BUFFER, sizeof( GLfloat ) * sizeof( cubeVertices ), cubeVertices, GL_STATIC_DRAW );
+    glBufferData( GL_ARRAY_BUFFER, sizeof( cubeVertices ), cubeVertices, GL_STATIC_DRAW );
     glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, 0 );
+    glEnableVertexAttribArray( 0 );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
+    glBindVertexArray( 0 );
 
     glGenBuffers( 1, &_ibo_boundBox );
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox);
-    glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices_boundBox * sizeof( GLushort ), cubeIndices, GL_STATIC_DRAW );
+    glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( cubeIndices ), cubeIndices, GL_STATIC_DRAW );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
 
     _inited_boundBox = true;
 }
@@ -102,14 +108,12 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
         return;
     }
 
-    assert( t_shader );
-
     // bound box
-    if( t_drawBB ) {
+    if( t_drawBB && _inited_boundBox ) {
         // bind bound box shader and draw bind box
         // don't need object and material for single color shader
         // but we need to recalcuate the bound box model matrix
-        // translate and then scale the unit box to transform it to bb
+        // scale and then translate the unit box to transform it to bb
         mat4 scaleMat = mat4(   vec4( _boundBox._sideLentghs[0], 0.f,            0.f,            0.f ), 
                                 vec4( 0.f,            _boundBox._sideLentghs[1], 0.f,            0.f ), 
                                 vec4( 0.f,            0.f,            _boundBox._sideLentghs[2], 0.f ), 
@@ -120,15 +124,21 @@ void CGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat4& t
                                     vec4( 0.f, 0.f, 1.f, 0.f ), 
                                     vec4( _boundBox._center, 1.f ) );
 
-        mat4 bbTfmMat = t_modelMatrix * scaleMat * translateMat;
+        mat4 bbTfmMat( 1.f );
+        bbTfmMat = t_modelMatrix * translateMat * scaleMat;
+        
+        glBindVertexArray( _vao_boundBox );
+
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo_boundBox );
+
+
         CShaderContainer::GetInstance().BindShaderForDrawing( SD_SINGLE_COLOR, 0, 0, bbTfmMat );
-        glBindBuffer( GL_ARRAY_BUFFER, _vbo_boundBox );
-
-
         glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, NULL );
         glDrawElements( GL_LINE_LOOP, 4, GL_UNSIGNED_SHORT, ( GLvoid* )( 4 * sizeof( GLushort ) ) );
         glDrawElements( GL_LINES, 8, GL_UNSIGNED_SHORT, ( GLvoid* )( 8*sizeof( GLushort ) ) );
 
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+        glBindVertexArray( 0 );
     }
 
     CShaderContainer::GetInstance().BindShaderForDrawing( t_shader, this, t_material, t_modelMatrix );
@@ -152,29 +162,44 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
     CGeo::DrawModel( t_shader, t_material, t_modelMatrix, t_drawBB );
 
     glBindVertexArray( _vao );
+//     glBindBuffer( GL_ARRAY_BUFFER, _vbo );
+//     glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _pos ) );
+//     glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _normal ) );
+//     glEnableVertexAttribArray( 0 );
+//     glEnableVertexAttribArray( 1 );
+
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
+
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
+
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
+    // glBindBuffer( GL_ARRAY_BUFFER, 0 );
 
 }
 
 void CPrimGeo::genBufferData( const vector<SVertex>& t_vertices, const vector<GLuint>& t_indices ) {
 
     // generate vao and vbos
+    glGenVertexArrays( 1, &_vao );
+    glBindVertexArray( _vao );
+
     glGenBuffers( 1, &_vbo );
     glBindBuffer( GL_ARRAY_BUFFER, _vbo );
     glBufferData( GL_ARRAY_BUFFER, sizeof( SVertex ) * t_vertices.size(), &t_vertices[0], GL_STATIC_DRAW );
-
-    glGenVertexArrays( 1, &_vao );
-    glBindVertexArray( _vao );
-    glBindBuffer( GL_ARRAY_BUFFER, _vbo );
-
     glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _pos ) );
     glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, sizeof( SVertex ), (void*)offsetof( SVertex, _normal ) );
     glEnableVertexAttribArray( 0 );
     glEnableVertexAttribArray( 1 );
+    glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+    glBindVertexArray( 0 );
 
     glGenBuffers( 1, &_ibo );
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
     glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &t_indices[0], GL_STATIC_DRAW );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+
 
 }
 
@@ -197,6 +222,9 @@ bool CTriangleGeo::initModel() {
     point = vec3( 0.5f, -0.5f, 0.0f );
     vertices.push_back( SVertex( point, normal ) );
     _boundBox.SetBounds( point );
+
+    // give bb a little thickness
+    _boundBox.Validate();
 
     vector<GLuint> indices;
     indices.push_back( 0 );
@@ -299,21 +327,15 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
             points.push_back( ( GLfloat )point->y );
             points.push_back( ( GLfloat )point->z );
 
-            if( t_unified ) {
-//                 if( i == 0 ) {
-//                     _bounds._min = vec3( point->x, point->y, point->z );
-//                     _bounds._max = vec3( point->x, point->y, point->z );
-//                 }
-//                 else {
-                    _bounds.SetBounds( vec3( point->x, point->y, point->z ) );
-//                }
-            }
+            _bounds.SetBounds( vec3( point->x, point->y, point->z ) );
         }
 
         glGenBuffers( 1, &_vbo );
         glBindBuffer( GL_ARRAY_BUFFER, _vbo );
         glBufferData( GL_ARRAY_BUFFER, 3 * numOfVertices * sizeof( GLfloat ), &points[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 0, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
         glEnableVertexAttribArray( 0 );
 
 /*    }*/
@@ -333,6 +355,8 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
         glBindBuffer( GL_ARRAY_BUFFER, _nbo );
         glBufferData( GL_ARRAY_BUFFER, 3 * numOfVertices * sizeof( GLfloat ), &normals[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 1, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
         glEnableVertexAttribArray( 1 );
 /*    }*/
 
@@ -352,6 +376,9 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
         glBindBuffer( GL_ARRAY_BUFFER, _tbo );
         glBufferData( GL_ARRAY_BUFFER, 2 * numOfVertices * sizeof( GLfloat ), &texcoords[0], GL_STATIC_DRAW );
         glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, 0, NULL );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+
+
         glEnableVertexAttribArray( 2 );
     }
 
@@ -370,7 +397,11 @@ void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
         glGenBuffers( 1, &_ibo );
         glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
         glBufferData( GL_ELEMENT_ARRAY_BUFFER, _numOfIndices * sizeof( GLuint ), &indices[0], GL_STATIC_DRAW );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+        
 /*    }*/
+
+    glBindVertexArray( 0 );
 
     _inited = true;
 
@@ -401,7 +432,10 @@ void CModelGeo::SMesh::DrawMesh() {
     if( !_inited ) return;
 
     glBindVertexArray( _vao );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
     glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
+    glBindVertexArray( 0 );
 }
 
 CModelGeo::~CModelGeo() {
@@ -442,33 +476,32 @@ bool CModelGeo::initModel() {
         mesh.InitMesh( assMesh, _unified );
         _meshes.push_back( mesh );
 
-        if( _unified ) {
-//            if( i == 0 ) {
-//                bounds = mesh._bounds;
-//            }
-//            else {
-               bounds.SetBounds( mesh._bounds );
-//           }
-        }
+        bounds.SetBounds( mesh._bounds );
     }
 
-    if( _unified ) {
-        _adjustedTranslate = -bounds._center;
-        _adjustedScale = 2.f / bounds.GetLongestSide();
+    _boundBox = bounds;
 
-        mat4 scaleMat = mat4(   vec4( _adjustedScale, 0.f,            0.f,            0.f ), 
-                                vec4( 0.f,            _adjustedScale, 0.f,            0.f ), 
-                                vec4( 0.f,            0.f,            _adjustedScale, 0.f ), 
+    if( _unified ) {
+        vec3 adjustedTranslate = -bounds._center;
+        float adjustedScale = 2.f / bounds.GetLongestSide();
+
+        mat4 scaleMat = mat4(   vec4( adjustedScale, 0.f,            0.f,            0.f ), 
+                                vec4( 0.f,            adjustedScale, 0.f,            0.f ), 
+                                vec4( 0.f,            0.f,            adjustedScale, 0.f ), 
                                 vec4( 0.f,            0.f,            0.f,            1.f ) );
 
         mat4 translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
                                     vec4( 0.f, 1.f, 0.f, 0.f ), 
                                     vec4( 0.f, 0.f, 1.f, 0.f ), 
-                                    vec4( _adjustedTranslate, 1.f ) );
+                                    vec4( adjustedTranslate, 1.f ) );
 
         // translate the model first to center and then scale
         _preprocessModelMatrix = _preprocessModelMatrix * scaleMat * translateMat;
+        _boundBox.Translate( adjustedTranslate );
+        _boundBox.Scale( adjustedScale );
     }
+
+    _boundBox.Validate();
  
     _inited = true;
     return _inited;

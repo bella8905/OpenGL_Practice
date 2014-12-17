@@ -27,16 +27,19 @@ using std::string;
 
 enum GEO_TYPE { GEO_TRIANGLE = 0, GEO_CUBE, GEO_SPHERE, GEO_SPIDER, GEO_COUNTER };
 
+// aabb
 struct SBoundBox {
     vec3 _min, _max;
     vec3 _sideLentghs;
     vec3 _center;
 
-    void setSideLengths() {
+    void recalculate() {
         float length = -1;
         for( int i = 0; i < 3; ++i ) {
             _sideLentghs[i] = _max[i] - _min[i];
         }
+
+        _center = ( _min + _max ) * 0.5f;
     }
 
     void SetBounds( const vec3& t_point ) {
@@ -47,8 +50,7 @@ struct SBoundBox {
         _max.y = ( t_point.y > _max.y ) ? t_point.y : _max.y;
         _max.z = ( t_point.z > _max.z ) ? t_point.z : _max.z;
 
-        _center = ( _min + _max ) * 0.5f;
-        setSideLengths();
+        recalculate();
     }
 
     void SetBounds( const SBoundBox& t_bounds ) {
@@ -59,8 +61,7 @@ struct SBoundBox {
         _max.y = max( _max.y, t_bounds._max.y);
         _max.z = max( _max.z, t_bounds._max.z);
 
-        _center = ( _min + _max ) * 0.5f;
-        setSideLengths();
+        recalculate();
     }
 
 
@@ -77,9 +78,42 @@ struct SBoundBox {
     SBoundBox() : _min( vec3( std::numeric_limits<float>::infinity() ) ), _max( vec3( -std::numeric_limits<float>::infinity() ) ) {
     }
 
+
+    void Translate( const vec3& t_translate ) {
+        _min += t_translate;
+        _max += t_translate; 
+
+        recalculate();
+    }
+
+    void Scale( const float& t_scale ) {
+        _min *= t_scale;
+        _max *= t_scale;
+
+        recalculate();
+    }
+
     void Reset() {
         _min = vec3( std::numeric_limits<float>::infinity() );
         _max = vec3( -std::numeric_limits<float>::infinity() );
+    }
+
+
+    // validate a bb
+    // if it has no thickness along one axis, give it some
+    void Validate() {
+        bool isChanged = false;
+        for( us i = 0; i < 3; ++i ) {
+            if( Utl::Equals( _min[i], _max[i] ) ) {
+                _min[i] -= 0.5f;
+                _max[i] += 0.5f;
+                isChanged = true;
+            }
+        }
+
+        if( isChanged ){
+            recalculate();
+        }
     }
     
 };
@@ -106,7 +140,7 @@ protected:
     // bool _drawBoundBox;
 
     // use same buffers to draw bound box for all models
-    static GLuint _vbo_boundBox, _ibo_boundBox;
+    static GLuint _vao_boundBox, _vbo_boundBox, _ibo_boundBox;
     static us _numOfIndices_boundBox;
     static bool _inited_boundBox;
 
@@ -217,10 +251,6 @@ protected:
     string _fileName;
     vector<SMesh> _meshes;
     bool _unified;       // if the model is scaled to fit a unit cube
-    // scale and translate the model to fit in a unit cube centered at origin if _unified is set
-    // these are not the real transformations in model matrix
-    float _adjustedScale;    
-    vec3  _adjustedTranslate;
 
 protected:
     bool initModel();

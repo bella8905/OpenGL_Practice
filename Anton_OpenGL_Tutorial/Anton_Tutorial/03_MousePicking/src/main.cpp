@@ -169,6 +169,7 @@ void _logGLParams() {
         { GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,    "GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS",    SINGLE_INT },
         { GL_MAX_VERTEX_UNIFORM_COMPONENTS,     "GL_MAX_VERTEX_UNIFORM_COMPONENTS",     SINGLE_INT },
         { GL_MAX_VIEWPORT_DIMS,                 "GL_MAX_VIEWPORT_DIMS",                 VEC_INT },
+        { GL_LINE_WIDTH_RANGE,                  "GL_LINE_WIDTH_RANGE",                  VEC_INT },
         { GL_STEREO,                            "GL_STEREO",                            SINGLE_BOOL },
     };
 
@@ -346,6 +347,7 @@ int main()
 
     glEnable( GL_DEPTH_TEST );
     glDepthFunc( GL_LESS );
+    glEnable(GL_POLYGON_OFFSET_FILL);
 
     CShaderContainer::GetInstance().Init();
     CGeoContainer::GetInstance().Init();
@@ -391,19 +393,22 @@ int main()
     // cube 
     CObj obj_cube( GEO_CUBE );
     obj_cube._modelMat = left;
+    obj_cube._drawBB = true;
     obj_cube._shaderType = SD_NORMAL_TEST;
     testScene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_TRIANGLE  );
     // obj_sphere._material = blinnMat;
-    obj_sphere._modelMat = center;
-    obj_sphere._shaderType = SD_SINGLE_COLOR;
+    obj_sphere._modelMat = right;
+    obj_sphere._shaderType = SD_PHONG;
+    obj_sphere._drawBB = true;
     testScene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_SPIDER );
-    obj_spider._modelMat = right;
+    obj_spider._modelMat = center;
     obj_spider._shaderType = SD_NORMAL_TEST;
+    obj_spider._drawBB = true;
     testScene.AddObj( obj_spider );
     
 
@@ -453,10 +458,11 @@ int main()
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
+
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
         _updateFPSCounter( window );
-
+        glClearColor( 0.5f, 0.5f, 0.5f, 1.f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
