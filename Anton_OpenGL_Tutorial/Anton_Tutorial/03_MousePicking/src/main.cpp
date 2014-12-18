@@ -30,6 +30,7 @@ int g_winWidth = 640;
 int g_winHeight = 480;
 
 bool g_drawWireModel = false;
+CScene g_scene;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
 
@@ -107,7 +108,36 @@ void _gui_onKeyPressed( int t_key, int t_mod ) {
     // TwKeyPressed( t_key, tw_mod );   // react multiple times ..
 }
 
+Utl::SRay _getRayFromMouse( const float& t_posx, const float& t_posy ) {
+    // nds ( -1 , 1 )
+    float x = ( 2.f * t_posx ) / g_winWidth - 1.f;
+    float y = 1.f - ( 2.f * t_posy ) / g_winHeight;
+    vec3 dir_nds( x, y, 1.f );
+    vec4 dir_clip( dir_nds.x, dir_nds.y, -1.f, 0.f );
+    // get the current used camera's proj matrix
+    vec4 dir_eye = glm::inverse( g_simpleCam.GetProjMat() ) * dir_clip;
+    dir_eye = vec4( dir_eye.x, dir_eye.y, -1.f, 0.f );
+    SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
+    SRay ray_wor = ray_eye.Transform( glm::inverse( g_simpleCam.GetViewMat() ) );
+
+    return ray_wor;
+}
+
+
+
 void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, int t_mods ) {
+    // do selection test
+    if( GLFW_PRESS == t_action ) {
+        double xpos, ypos;
+        glfwGetCursorPos( t_window, &xpos, &ypos );
+        Utl::SRay ray_wor = _getRayFromMouse( xpos, ypos );
+
+        int selectedObj = -1;
+        for( us i = 0; i < g_scene._objects.size(); ++i ) {
+
+        }
+    }
+
     _gui_onMouseClicked( t_btn, t_action );
 }
 
@@ -389,27 +419,27 @@ int main()
     mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
     mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
     mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-    CScene testScene;
+
     // cube 
     CObj obj_cube( GEO_CUBE );
-    obj_cube._modelMat = left;
+    obj_cube.SetModelMat( left );
     obj_cube._drawBB = true;
     obj_cube._shaderType = SD_NORMAL_TEST;
-    testScene.AddObj( obj_cube );
+    g_scene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_TRIANGLE  );
     // obj_sphere._material = blinnMat;
-    obj_sphere._modelMat = right;
+    obj_sphere.SetModelMat( right );
     obj_sphere._shaderType = SD_PHONG;
     obj_sphere._drawBB = true;
-    testScene.AddObj( obj_sphere );
+    g_scene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_SPIDER );
-    obj_spider._modelMat = center;
+    obj_spider.SetModelMat( center );
     obj_spider._shaderType = SD_NORMAL_TEST;
     obj_spider._drawBB = true;
-    testScene.AddObj( obj_spider );
+    g_scene.AddObj( obj_spider );
     
 
     // init scenes
@@ -468,7 +498,7 @@ int main()
         glViewport( 0, 0, g_winWidth, g_winHeight );
 
 
-        testScene.DrawScene();
+        g_scene.DrawScene();
 
         _gui_draw();
 
