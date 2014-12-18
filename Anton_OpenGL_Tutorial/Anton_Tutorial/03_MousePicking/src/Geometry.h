@@ -119,6 +119,7 @@ struct SBoundBox {
 };
 
 
+
 class CGeo
 {
 public:
@@ -155,7 +156,7 @@ public:
     bool IsInited() { return _inited; }
 
     mat4& GetPreProcessedModelMat() { return _preprocessModelMatrix; }
-
+    SBoundBox& GetBB() { return _boundBox; }
 
     // init / deinit boundbox buffers, only do it once
     static void InitBoundBox();
@@ -297,5 +298,6 @@ public:
     void Init();
     void Deinit();
 
-    void DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB );
+    SBoundBox* GetGeoBB( const GEO_TYPE& t_geoType );
+    void DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB );
 };

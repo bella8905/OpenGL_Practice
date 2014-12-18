@@ -573,7 +573,21 @@ void CGeoContainer::Deinit() {
     _inited = false;
 }
 
-void CGeoContainer::DrawGeo( GEO_TYPE t_geoType, SHADER_TYPE t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, bool t_drawBB ) {
+SBoundBox* CGeoContainer::GetGeoBB( const GEO_TYPE& t_geoType ) {
+    if( !_inited ) {
+        LogError<<"geo container not inited"<<LogEndl;
+        return 0;
+    }
+
+    if( !_geos[ t_geoType ] ) {
+        LogError<<"geo not inited in geo container"<<LogEndl;
+        return 0;
+    }
+
+    return &( _geos[ t_geoType ]->GetBB() );
+}
+
+void CGeoContainer::DrawGeo( const GEO_TYPE& t_geoType, const SHADER_TYPE& t_shaderType, CMaterial* t_material, const mat4& t_modelMatrix, const bool& t_drawBB ) {
     if( !_inited ) {
         LogError<<"geo container not inited"<<LogEndl;
         return;

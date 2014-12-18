@@ -26,13 +26,22 @@ public:
 public:
     GEO_TYPE _geoType;
     CMaterial _material;
-    mat4 _modelMat;
     // CShader* _shader;
     SHADER_TYPE _shaderType;
 
     bool _drawBB;
 
+protected:
+    mat4 _modelMat;
+    mat4 _invModelMat;
+
+    float rayIntersectWithBB( const Utl::SRay& t_ray, const SBoundBox* t_bb );
+
 public:
-    void DrawObj();    
+    void DrawObj();  
+    void SetModelMat( const mat4& t_modelMat ) { _modelMat = t_modelMat; _invModelMat = glm::inverse( _modelMat ); }
+    
+    // test if bb is hit by ray, and return the dist from ray origin to hit point
+    float RayIntersectTest( const Utl::SRay& t_ray );
 };
 

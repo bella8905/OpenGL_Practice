@@ -117,8 +117,8 @@ Utl::SRay _getRayFromMouse( const float& t_posx, const float& t_posy ) {
     // get the current used camera's proj matrix
     vec4 dir_eye = glm::inverse( g_simpleCam.GetProjMat() ) * dir_clip;
     dir_eye = vec4( dir_eye.x, dir_eye.y, -1.f, 0.f );
-    SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
-    SRay ray_wor = ray_eye.Transform( glm::inverse( g_simpleCam.GetViewMat() ) );
+    Utl::SRay ray_eye( vec4( 0.f, 0.f, 0.f, 1.f ), dir_eye );
+    Utl::SRay ray_wor = ray_eye.Transform( glm::inverse( g_simpleCam.GetViewMat() ) );
 
     return ray_wor;
 }
@@ -126,22 +126,26 @@ Utl::SRay _getRayFromMouse( const float& t_posx, const float& t_posy ) {
 
 
 void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, int t_mods ) {
-    // do selection test
-    if( GLFW_PRESS == t_action ) {
-        double xpos, ypos;
-        glfwGetCursorPos( t_window, &xpos, &ypos );
-        Utl::SRay ray_wor = _getRayFromMouse( xpos, ypos );
-
-        int selectedObj = -1;
-        for( us i = 0; i < g_scene._objects.size(); ++i ) {
-
-        }
-    }
-
     _gui_onMouseClicked( t_btn, t_action );
 }
 
 void _gui_mouseMoveCallback( GLFWwindow* t_window, double t_x, double t_y ) {
+    // do selection test
+    double xpos, ypos;
+    glfwGetCursorPos( t_window, &xpos, &ypos );
+    Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
+
+    int selectedObjIdx = g_scene.GetRayHitObjIdx( ray_wor );
+    for( int i = 0; i < ( int )g_scene._objects.size(); ++i ) {
+        if( i == selectedObjIdx ) {
+            g_scene._objects[ i ]._drawBB = true;
+        }
+        else {
+            g_scene._objects[ i ]._drawBB = false;
+        }
+    }
+
+
     TwEventMousePosGLFW( ( int )t_x, ( int )t_y );
 }
 
