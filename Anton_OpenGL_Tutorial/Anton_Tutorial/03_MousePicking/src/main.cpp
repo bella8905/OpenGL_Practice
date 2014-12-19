@@ -33,6 +33,7 @@ bool g_drawWireModel = false;
 CScene g_scene;
 
 const string g_imageFilePrefix = "images/screenshot_"; 
+bool g_mousePressed = false;
 
 ///////////////////////////////////////////////
 // GUI : AntTweakBar
@@ -126,23 +127,39 @@ Utl::SRay _getRayFromMouse( const float& t_posx, const float& t_posy ) {
 
 
 void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, int t_mods ) {
+    // right mouse click to rotate
+    if( t_action == GLFW_PRESS && t_btn == GLFW_MOUSE_BUTTON_RIGHT ){
+        cout<<"mouse pressed"<<endl;
+        g_mousePressed = true;
+    } 
+    if( t_action == GLFW_RELEASE && t_btn == GLFW_MOUSE_BUTTON_RIGHT ) {
+        cout<<"mouse released"<<endl;
+        g_mousePressed = false;
+        g_scene.StopRotObj( g_scene._selectedObjIdx );
+    } 
+
+    // do selection test
+    // left mouse click to select
+    if( t_action == GLFW_PRESS && t_btn == GLFW_MOUSE_BUTTON_LEFT ) {
+        double xpos, ypos;
+        glfwGetCursorPos( t_window, &xpos, &ypos );
+        Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
+
+        g_scene._selectedObjIdx = g_scene.GetRayHitObjIdx( ray_wor );
+        g_scene.UpdateScene();
+        
+        // if we select a different obj, stop rot obj
+    }
+
+
     _gui_onMouseClicked( t_btn, t_action );
 }
 
 void _gui_mouseMoveCallback( GLFWwindow* t_window, double t_x, double t_y ) {
-    // do selection test
-    double xpos, ypos;
-    glfwGetCursorPos( t_window, &xpos, &ypos );
-    Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
 
-    int selectedObjIdx = g_scene.GetRayHitObjIdx( ray_wor );
-    for( int i = 0; i < ( int )g_scene._objects.size(); ++i ) {
-        if( i == selectedObjIdx ) {
-            g_scene._objects[ i ]._drawBB = true;
-        }
-        else {
-            g_scene._objects[ i ]._drawBB = false;
-        }
+    if( g_mousePressed )
+    {
+        cout<<"mouse held"<<endl;
     }
 
 
@@ -298,6 +315,23 @@ void TW_CALL _getWireModeCB(  void* t_value, void* t_clientData ) {
     *(bool*)t_value = g_drawWireModel;
 }
 
+// arcball 
+void TW_CALL _setArcballCB(  const void* t_value, void* t_clientData ) {
+    CObj::_arcball_drawAcball = *(bool*)t_value;
+}
+
+void TW_CALL _getArcballCB(  void* t_value, void* t_clientData ) {
+    *(bool*)t_value = CObj::_arcball_drawAcball;
+}
+
+void TW_CALL _setArcballRadiusCB(  const void* t_value, void* t_clientData ) {
+    // CObj::_arcball_radius = *(float*)t_value;
+}
+
+void TW_CALL _getArcballRadiusCB(  void* t_value, void* t_clientData ) {
+    *(float*)t_value = 0.f;
+}
+
 // screen capture
 void _screenPrint() {
     string time = Utl::GetTime( Utl::TIME_STAMP_FILE_NAME );
@@ -422,16 +456,16 @@ int main()
 
     mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
     mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-    mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
+    mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.1f, 0.1f, 0.1f ) );
 
     // cube 
-    CObj obj_cube( GEO_CUBE );
+    CObj obj_cube( GEO_UNIT_CUBE );
     obj_cube.SetModelMat( left );
     obj_cube._drawBB = true;
     obj_cube._shaderType = SD_NORMAL_TEST;
     g_scene.AddObj( obj_cube );
 
-    CObj obj_sphere( GEO_TRIANGLE  );
+    CObj obj_sphere( GEO_UNIT_SPHERE  );
     // obj_sphere._material = blinnMat;
     obj_sphere.SetModelMat( right );
     obj_sphere._shaderType = SD_PHONG;
@@ -461,6 +495,9 @@ int main()
 
 
     TwAddVarCB( bar, "wire", TW_TYPE_BOOL32, _setWireModeCB, _getWireModeCB, 0,  " label='Wireframe' help='Toggle wireframe display mode.' ");
+    TwAddVarCB( bar, "arcball", TW_TYPE_BOOL32, _setArcballCB, _getArcballCB, 0,  " label='Arcball' help='Toggle arcball on or off.' ");
+    TwAddVarCB( bar, "arcball radius", TW_TYPE_FLOAT, _setArcballRadiusCB, _getArcballRadiusCB, 0,  " label='Arcball Radius' step=0.01 max=0.5 min=0.1 ");
+
     // vec struct for gui, which is mapped to a glm::vec3
     // so we don't have to steal the DIR3F type
     TwStructMember _tw_vec3Members[] = {

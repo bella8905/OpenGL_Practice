@@ -170,7 +170,7 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
 
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 
-    glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
+    glDrawElements( GL_POINTS, _numOfIndices, GL_UNSIGNED_INT, NULL );
 
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );
@@ -239,9 +239,9 @@ bool CTriangleGeo::initModel() {
     return _inited;
 }
 
-// cube
-bool CCubeGeo::initModel() {
-    LogMsg<<"Init Cube"<<LogEndl;
+// unit cube
+bool CUnitCubeGeo::initModel() {
+    LogMsg<<"Init Unit Cube"<<LogEndl;
     // if obj is already inited, simply return
     if( CPrimGeo::initModel() ) return true;
 
@@ -300,6 +300,87 @@ bool CCubeGeo::initModel() {
 
     return _inited;
 } 
+
+// unit sphere
+bool CUnitSphereGeo::initModel() {
+    LogMsg<<"Init Unit Sphere"<<LogEndl;
+    // if obj is already inited, simply return
+    if( CPrimGeo::initModel() ) return true;
+
+    vector<GLuint> indices;
+    vector<SVertex> vertices;
+
+    int numLatSeg = 10;
+    int numLongSeg = 10;
+
+    for(int latCount = 0; latCount != numLatSeg; ++latCount)
+    {
+        float lat0 = Utl::g_Pi * (float(latCount) / numLatSeg);
+        float lat1 = Utl::g_Pi * (float(latCount + 1))/numLatSeg;
+        float y0 = cosf( lat0 );
+        float yr0 = sinf( lat0 );
+        float y1 = cosf( lat1 );
+        float yr1 = sinf( lat1 );
+
+
+        for( int longCount = 0; longCount!= numLongSeg; ++longCount)
+        {
+            float long0 = 2*Utl::g_Pi*(float(longCount) / numLongSeg);
+            float long1 = 2*Utl::g_Pi*(float(longCount+1))/numLongSeg;
+            float x00 = yr0 * sinf(long0);
+            float x01 = yr0 * sinf(long1);
+            float x10 = yr1 * sinf(long0);
+            float x11 = yr1 * sinf(long1);
+
+
+            float z00 = yr0 * cosf(long0);
+            float z01 = yr0 * cosf(long1);
+            float z10 = yr1 * cosf(long0);
+            float z11 = yr1 * cosf(long1);
+        
+            static GLuint index = 0;
+            /*			cout<<"tempNum: "<<tempNum<<endl;*/
+            indices.push_back( index++ );
+            indices.push_back( index++ );
+            indices.push_back( index++ );
+            indices.push_back( index++ );
+            indices.push_back( index++ );
+            indices.push_back( index++ );
+
+            // 0 
+            vertices.push_back( SVertex( vec3( x00, y0, z00 ),  vec3( x00, y0, z00 ) ) );
+            _boundBox.SetBounds( vec3( x00, y0, z00 ) );
+
+            // 1
+            vertices.push_back( SVertex( vec3( x10, y1, z10 ),  vec3( x10, y1, z10 ) ) );
+            _boundBox.SetBounds( vec3( x10, y1, z10 ) );
+
+            // 2
+            vertices.push_back( SVertex( vec3( x11, y1, z11 ),  vec3( x11, y1, z11 ) ) );
+            _boundBox.SetBounds( vec3( x11, y1, z11 ) );
+
+            // 0
+            vertices.push_back( SVertex( vec3( x00, y0, z00 ),  vec3( x00, y0, z00 ) ) );
+            _boundBox.SetBounds( vec3( x00, y0, z00 ) );
+            
+            // 2
+            vertices.push_back( SVertex( vec3( x11, y1, z11 ),  vec3( x11, y1, z11 ) ) );
+            _boundBox.SetBounds( vec3( x11, y1, z11 ) );
+            
+            // 3
+            vertices.push_back( SVertex( vec3( x01, y0, z01 ),  vec3( x01, y0, z01  ) ) );
+            _boundBox.SetBounds( vec3( x01, y0, z01  ) );
+        }
+    }
+
+    _numOfIndices = indices.size();
+
+    genBufferData( vertices, indices );
+
+    _inited = true;
+
+    return _inited;
+}
 
 // model
 void CModelGeo::SMesh::InitMesh( const aiMesh* t_aiMesh, bool t_unified ) {
@@ -546,7 +627,8 @@ void CGeoContainer::Init() {
     CGeo::InitBoundBox();
 
     _geos[ GEO_TRIANGLE  ] = new CTriangleGeo();
-    _geos[ GEO_CUBE  ] = new CCubeGeo();
+    _geos[ GEO_UNIT_CUBE  ] = new CUnitCubeGeo();
+    _geos[ GEO_UNIT_SPHERE ] = new CUnitSphereGeo();
     _geos[ GEO_SPHERE  ] = new CSphereGeo( true );
     _geos[ GEO_SPIDER  ] = new CSpiderGeo( true );
 

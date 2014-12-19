@@ -25,7 +25,7 @@
 using std::vector;
 using std::string;  
 
-enum GEO_TYPE { GEO_TRIANGLE = 0, GEO_CUBE, GEO_SPHERE, GEO_SPIDER, GEO_COUNTER };
+enum GEO_TYPE { GEO_TRIANGLE = 0, GEO_UNIT_CUBE, GEO_UNIT_SPHERE, GEO_SPHERE, GEO_SPIDER, GEO_COUNTER };
 
 // aabb
 struct SBoundBox {
@@ -89,6 +89,13 @@ struct SBoundBox {
     void Scale( const float& t_scale ) {
         _min *= t_scale;
         _max *= t_scale;
+
+        recalculate();
+    }
+
+    void Transform( const mat4& t_tfm ) {
+        _min = vec3( t_tfm * vec4( _min, 1.f ) );
+        _max = vec3( t_tfm * vec4( _max, 1.f ) );
 
         recalculate();
     }
@@ -207,11 +214,22 @@ protected:
     bool initModel();
 };
 
-// cube
-class CCubeGeo : public CPrimGeo {
+// a unit cube with center (0,0,0) and side 1
+class CUnitCubeGeo : public CPrimGeo {
 public:
-    CCubeGeo() { initModel(); }
-    ~CCubeGeo() { deinitModel(); }
+    CUnitCubeGeo() { initModel(); }
+    ~CUnitCubeGeo() { deinitModel(); }
+
+protected:
+    bool initModel();
+};
+
+
+// a unit sphere with center ( 0,0,0 ) and radius 1
+class CUnitSphereGeo : public CPrimGeo {
+public:
+    CUnitSphereGeo() { initModel(); }
+    ~CUnitSphereGeo() { deinitModel(); }
 
 protected:
     bool initModel();
