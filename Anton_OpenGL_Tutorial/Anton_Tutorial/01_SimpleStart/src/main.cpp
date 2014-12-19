@@ -3,6 +3,10 @@
 //  Practice_11_19_14 - main
 //
 //  Implementation of Anton's OpenGL tutorial
+//  p1 - a simple start demo. 
+//      gl program basic setups: error checks / info print
+//      sd / sp load, compile and link
+//      antTweakbar simple integration
 //
 //  Copyright (c) 2014 Bella Q
 //  

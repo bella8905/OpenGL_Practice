@@ -3,6 +3,11 @@
 //  Practice_11_19_14 - main
 //
 //  Implementation of Anton's OpenGL tutorial
+//  p2 - build more 
+//      screenshot
+//      geo / material / camera / light / shader object
+//      model load
+//      phong shader
 //
 //  Copyright (c) 2014 Bella Q
 //  

@@ -3,6 +3,10 @@
 //  Practice_11_19_14 - main
 //
 //  Implementation of Anton's OpenGL tutorial
+//  p3 - 
+//  obj / scene class. geo / sd container
+//  bb / raybased mouse picking
+//  arcball rotation
 //
 //  Copyright (c) 2014 Bella Q
 //  
