@@ -135,6 +135,12 @@ void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, in
     if( t_action == GLFW_PRESS && t_btn == GLFW_MOUSE_BUTTON_RIGHT ){
         cout<<"mouse pressed"<<endl;
         g_mousePressed = true;
+
+        double xpos, ypos;
+        glfwGetCursorPos( t_window, &xpos, &ypos );
+        Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
+        g_scene.RayIntersectWithArcball( ray_wor, true );
+
     } 
     if( t_action == GLFW_RELEASE && t_btn == GLFW_MOUSE_BUTTON_RIGHT ) {
         cout<<"mouse released"<<endl;
@@ -164,7 +170,13 @@ void _gui_mouseMoveCallback( GLFWwindow* t_window, double t_x, double t_y ) {
     if( g_mousePressed )
     {
         cout<<"mouse held"<<endl;
+        double xpos, ypos;
+        glfwGetCursorPos( t_window, &xpos, &ypos );
+        Utl::SRay ray_wor = _getRayFromMouse( (float)xpos, (float)ypos );
+        g_scene.RayIntersectWithArcball( ray_wor, false );
     }
+
+
 
 
     TwEventMousePosGLFW( ( int )t_x, ( int )t_y );
@@ -357,6 +369,22 @@ void _screenPrint() {
     LogPass<<"image saved"<<LogEndl;
 }
 
+
+// init and deint modules
+void _initModules()
+{
+    CShaderContainer::GetInstance().Init();
+    CGeoContainer::GetInstance().Init();
+    SArcball::InitArcball();
+}
+
+void _deinitModules() {
+    SArcball::DeinitArcball();
+    CGeoContainer::GetInstance().Deinit();
+    CShaderContainer::GetInstance().Deinit();
+
+}
+
 int main()
 {
     glfwSetErrorCallback( _glfwErrorCallback );
@@ -421,8 +449,9 @@ int main()
     glDepthFunc( GL_LESS );
     glEnable(GL_POLYGON_OFFSET_FILL);
 
-    CShaderContainer::GetInstance().Init();
-    CGeoContainer::GetInstance().Init();
+    glPointSize( 3.f );
+
+    _initModules();
     ////////////////////////////////////////////////////////
     // init scenes
     // camera
@@ -477,7 +506,7 @@ int main()
     g_scene.AddObj( obj_sphere );
 
 
-    CObj obj_spider( GEO_SPIDER );
+    CObj obj_spider( GEO_TRIANGLE );
     obj_spider.SetModelMat( center );
     obj_spider._shaderType = SD_NORMAL_TEST;
     obj_spider._drawBB = true;
@@ -564,8 +593,7 @@ int main()
     _gui_deinit();
     glfwTerminate();
 
-    CGeoContainer::GetInstance().Deinit();
-    CShaderContainer::GetInstance().Deinit();
+    _deinitModules();
 
     return 1;
 }

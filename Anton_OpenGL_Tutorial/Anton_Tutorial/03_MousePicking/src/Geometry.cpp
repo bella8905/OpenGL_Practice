@@ -21,7 +21,6 @@
 GLuint CGeo::_vao_boundBox = 0;
 GLuint CGeo::_vbo_boundBox = 0;
 GLuint CGeo::_ibo_boundBox = 0;
-us CGeo::_numOfIndices_boundBox = 0;
 bool CGeo::_inited_boundBox = false;  
 
 CGeo::CGeo() : _inited( false ), _preprocessModelMatrix( 1.f ) {
@@ -170,7 +169,7 @@ void CPrimGeo::DrawModel( SHADER_TYPE t_shader, CMaterial* t_material, const mat
 
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, _ibo );
 
-    glDrawElements( GL_POINTS, _numOfIndices, GL_UNSIGNED_INT, NULL );
+    glDrawElements( GL_TRIANGLES, _numOfIndices, GL_UNSIGNED_INT, NULL );
 
     glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, 0 );
     glBindVertexArray( 0 );

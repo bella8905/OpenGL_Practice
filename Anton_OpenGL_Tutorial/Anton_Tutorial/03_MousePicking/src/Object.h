@@ -18,13 +18,31 @@
 #include "Shader.h"
 
 struct SArcball {
+    mat4 _modelMat;  // the model matrix of arcball, it is different from the one for object because we keep a fixed radius
+    mat4 _invModelMat;
+
     vec3 _center;   // center of the obj, caled by center of bb and model matrix
     bool _isInRot;
     vec3 _rotStartPoint;
     vec3 _rotEndPoint;
 
-    SArcball() : _center( 0.f ), _isInRot( false ) {
+    static float _radius;
+    // arcball related vbo and vao
+    // use vao and vbo and update vbo data to draw points if needed
+    // maybe I'm naive to implement it this way
+
+    static GLuint _vao;
+    static GLuint _vbo, _ibo;
+    static bool _arcball_inited;
+
+    SArcball() : _center( 0.f ), _isInRot( false ), _modelMat( 1.f ), _invModelMat( 1.f ) {
     }
+
+    static void InitArcball();
+    static void DeinitArcball();
+
+    void RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart );
+    void DrawArcball();
 
 };
 
@@ -43,7 +61,6 @@ public:
     bool _selected;
     static bool _drawBB;
     static bool _arcball_drawAcball;
-    static float _arcball_radius;
 
 protected:
     mat4 _modelMat;
@@ -52,7 +69,6 @@ protected:
     // arcball
     SArcball _arcball;
     float rayIntersectWithBB( const Utl::SRay& t_ray, const SBoundBox* t_bb );
-    
 
 public:
     void DrawObj();  
@@ -62,7 +78,7 @@ public:
     float RayIntersectTestWithBB( const Utl::SRay& t_ray );
     void RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart );
 
-    void StartRot() { _arcball._isInRot = true; }
+    // void StartRot() { _arcball._isInRot = true; }
     void EndRot() { _arcball._isInRot = false; }
 };
 

@@ -149,7 +149,6 @@ protected:
 
     // use same buffers to draw bound box for all models
     static GLuint _vao_boundBox, _vbo_boundBox, _ibo_boundBox;
-    static us _numOfIndices_boundBox;
     static bool _inited_boundBox;
 
 protected:
