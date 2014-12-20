@@ -19,6 +19,7 @@ public:
     void StopRotObj(const int& t_objIdx );
     // get the first hit object by a ray
     int GetRayHitObjIdx( const Utl::SRay& t_ray );
-
+    // update arcball
+    void RayIntersectWithArcball( const Utl::SRay& t_ray, const bool& t_isStart );
 };
 

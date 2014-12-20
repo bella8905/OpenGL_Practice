@@ -37,6 +37,11 @@ int CScene::GetRayHitObjIdx( const Utl::SRay& t_ray ) {
     return index;
 }
 
+void CScene::RayIntersectWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
+    if( _selectedObjIdx < 0 || _selectedObjIdx >= (int)_objects.max_size() ) return;
+    _objects[ _selectedObjIdx ].RayIntersectTestWithArcball( t_ray, t_isStart );
+}
+
 void CScene::UpdateScene() {
     // update selected obj
     for( int i = 0; i < ( int )_objects.size(); ++i ) {
