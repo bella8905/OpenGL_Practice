@@ -2,7 +2,7 @@
 #include "Object.h"
 
 bool CObj::_drawBB = true;
-bool CObj::_arcball_drawAcball = true;
+bool CObj::_drawAcball = true;
 
 float SArcball::_radius = 0.8f;
 GLuint SArcball::_vao = 0;
@@ -64,9 +64,10 @@ void SArcball::DeinitArcball() {
 
 
 // ray sphere intersect
-void SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
+bool SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart, glm::mat3& t_rotMat ) {
 
-    Utl::SRay ProjRay = t_ray.Transform( _invModelMat );
+    // no need to do any transformation. we use the center position and radius of arcball
+    Utl::SRay ProjRay = t_ray;
     vec4 posObj =  ProjRay._Origin;
     vec4 dirObj = ProjRay._Dir;
 
@@ -78,11 +79,11 @@ void SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& 
     if( Utl::Equals( A, 0.f ) )
     {
         LogError<< "anything wrong with ray?" <<LogEndl;
-        return;
+        return false;
     }
 
     float Radicand = B * B - 4 * A * C;
-    if( Radicand < 0 )  return;
+    if( Radicand < 0 )  return false;
 
     float t1 = ( -B + sqrt( Radicand ) ) * 0.5f / A;
     float t2 = ( -B - sqrt( Radicand ) ) * 0.5f / A;
@@ -90,40 +91,70 @@ void SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& 
     float tmax = max( t1, t2 );
     float tmin = min( t1, t2 );
 
-    if( tmax < 0 ) return;
+    if( tmax < 0 ) return false;
 
     float t;
     if( tmin >= 0 ) t = tmin; 
     else t = tmax;
 
-    vec4 InstPoint =  ProjRay.GetPointOnRay( t );
-    InstPoint = _modelMat * InstPoint;
+    bool rtn;
+    vec3 InstPoint =  vec3( ProjRay.GetPointOnRay( t ) );
+
     us vertexIndex = 0;
     if( t_isStart ) {
-        _rotStartPoint = vec3( InstPoint );
+        _rotStartPoint = InstPoint;
+        _rotEndPoint = _rotStartPoint;
         _isInRot = true;
+        rtn = false;
     }
     else {
-        _rotEndPoint = vec3( InstPoint );
+        _rotEndPoint = InstPoint;
+        rtn = true;
+
+        // calculate rot matrix
+        vec3 startSide =  glm::normalize( _rotStartPoint - _center );
+        vec3 endSide =  glm::normalize( _rotEndPoint - _center );
+        vec3 rotAxis = glm::cross( startSide, endSide );
+        float angle = acos( glm::dot( startSide, endSide ) );
+        glm::quat rotQuat = glm::angleAxis( angle, rotAxis );
+        t_rotMat = glm::toMat3( rotQuat );
+
     }
 
-    // if( drawAcball ) {
-    // update our buffer data here intead of the drawing process
-    vec3 vertices[] = {
-        _center,
-        _rotStartPoint,
-        _rotEndPoint,
-    };
+    // update our buffer data here instead of the drawing process
+    // data doesn't need to be updated if we don't draw arcball
+    if( CObj::_drawAcball )
+    {
+        vec3 vertices[] = {
+            _center,
+            _rotStartPoint,
+            _rotEndPoint,
+        };
 
-    us numOfVertices = sizeof( vertices);
-    glBindBuffer( GL_ARRAY_BUFFER, _vbo );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, numOfVertices, glm::value_ptr( vertices[0]  ) );
-    glBindBuffer( GL_ARRAY_BUFFER, 0 );
-    // }
+        us numOfVertices = sizeof( vertices);
+        glBindBuffer( GL_ARRAY_BUFFER, _vbo );
+        glBufferSubData( GL_ARRAY_BUFFER, 0, numOfVertices, glm::value_ptr( vertices[0]  ) );
+        glBindBuffer( GL_ARRAY_BUFFER, 0 );
+    }
+
+    return rtn;
 }
 
 void SArcball::DrawArcball() {
-    CGeoContainer::GetInstance().DrawGeo( GEO_UNIT_SPHERE, SD_PHONG, &g_defaultMat, _modelMat, false );
+    // arcball model matrix
+    mat4 scaleMat = mat4(   vec4( _radius, 0.f,            0.f,            0.f ), 
+                            vec4( 0.f,            _radius, 0.f,            0.f ), 
+                            vec4( 0.f,            0.f,            _radius, 0.f ), 
+                            vec4( 0.f,            0.f,            0.f,            1.f ) );
+
+    mat4 translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
+        vec4( 0.f, 1.f, 0.f, 0.f ), 
+        vec4( 0.f, 0.f, 1.f, 0.f ), 
+        vec4( _center, 1.f ) );
+
+    mat4 modelMat = translateMat * scaleMat;
+
+    CGeoContainer::GetInstance().DrawGeo( GEO_UNIT_SPHERE, SD_PHONG, &g_defaultMat, modelMat, false );
     if( _isInRot ) {
         // draw arcball points
         glBindVertexArray( _vao );
@@ -135,7 +166,7 @@ void SArcball::DrawArcball() {
     }
 }
 
-CObj::CObj( GEO_TYPE t_type ) : _geoType( t_type ), _material( g_defaultMat ), _modelMat( mat4() ), _invModelMat( mat4() ), _shaderType( SD_SINGLE_COLOR ), _selected( false )
+CObj::CObj( GEO_TYPE t_type ) : _geoType( t_type ), _material( g_defaultMat ), _modelMat( mat4() ), _invModelMat( mat4() ), _translate( 0.f ), _rot( 1.f ), _scale( 1.f ), _shaderType( SD_SINGLE_COLOR ), _selected( false )
 {
 }
 
@@ -144,36 +175,72 @@ CObj::~CObj()
 {
 }
 
+// 
+// void CObj::SetModelMat( const mat4& t_modelMat ) {
+//     _modelMat = t_modelMat; 
+//     _invModelMat = glm::inverse( _modelMat ); 
+//     // set arcball center
+//     SBoundBox* sphereGeoBB = CGeoContainer::GetInstance().GetGeoBB( GEO_UNIT_SPHERE );
+//     assert( sphereGeoBB );
+//     _arcball._center = vec3( t_modelMat * vec4( sphereGeoBB->_center, 1.f ) );
+// }
 
-void CObj::SetModelMat( const mat4& t_modelMat ) {
-    _modelMat = t_modelMat; 
-    _invModelMat = glm::inverse( _modelMat ); 
-    // set arcball center
-    SBoundBox* sphereGeoBB = CGeoContainer::GetInstance().GetGeoBB( GEO_UNIT_SPHERE );
-    assert( sphereGeoBB );
-    _arcball._center = vec3( t_modelMat * vec4( sphereGeoBB->_center, 1.f ) );
-
-    // arcball model matrix
-    mat4 scaleMat = mat4(   vec4( SArcball::_radius, 0.f,            0.f,            0.f ), 
-                            vec4( 0.f,            SArcball::_radius, 0.f,            0.f ), 
-                            vec4( 0.f,            0.f,            SArcball::_radius, 0.f ), 
-                            vec4( 0.f,            0.f,            0.f,            1.f ) );
+void CObj::resetModelMatrix() {
+    mat4 scaleMat = mat4(   vec4( _scale, 0.f,    0.f,    0.f ), 
+        vec4( 0.f,    _scale, 0.f,    0.f ), 
+        vec4( 0.f,    0.f,    _scale, 0.f ), 
+        vec4( 0.f,    0.f,    0.f,    1.f ) );
 
     mat4 translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
-                                vec4( 0.f, 1.f, 0.f, 0.f ), 
-                                vec4( 0.f, 0.f, 1.f, 0.f ), 
-                                vec4( _arcball._center, 1.f ) );
+        vec4( 0.f, 1.f, 0.f, 0.f ), 
+        vec4( 0.f, 0.f, 1.f, 0.f ), 
+        vec4( _translate, 1.f ) );
 
-    _arcball._modelMat = translateMat * scaleMat;
-    _arcball._invModelMat = glm::inverse( _arcball._modelMat );
+    mat4 rotMat = mat4( vec4( _rot[0], 0.f ),
+        vec4( _rot[1], 0.f ), 
+        vec4( _rot[2], 0.f ),
+        vec4( 0.f, 0.f, 0.f, 1.f ) );
+
+    _modelMat = translateMat * rotMat * scaleMat;
+
+    // not use glm::inverse to cal inverse matrix, that's probably expensive
+    mat4 inv_scaleMat = mat4(   vec4( 1.f / _scale, 0.f,    0.f,    0.f ), 
+        vec4( 0.f,    1.f / _scale, 0.f,    0.f ), 
+        vec4( 0.f,    0.f,    1.f / _scale, 0.f ), 
+        vec4( 0.f,    0.f,    0.f,    1.f ) );
+
+    mat4 inv_translateMat = mat4(   vec4( 1.f, 0.f, 0.f, 0.f ),
+        vec4( 0.f, 1.f, 0.f, 0.f ), 
+        vec4( 0.f, 0.f, 1.f, 0.f ), 
+        vec4( -_translate, 1.f ) );
+
+    mat4 inv_rotMat = glm::transpose( rotMat );
+
+    _invModelMat = inv_scaleMat * inv_rotMat * inv_translateMat;
+}
+
+void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3 t_rot, const float& t_scale ) {
+    _translate = t_translate;
+    _rot = t_rot;
+    _scale = t_scale;
+
+    resetModelMatrix();
+
+    // set arcball center to the center of object
+    _arcball._center = _translate;
 }
 
 void CObj::DrawObj() {
     CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
 
-    if( _selected &&_arcball_drawAcball  ) {
+    if( _selected &&_drawAcball  ) {
         _arcball.DrawArcball();
     }
+}
+
+void CObj::RotateAroundLocalAxis( const glm::mat3& t_rot ) {
+    _rot = t_rot * _rot;
+    resetModelMatrix();
 }
 
 
@@ -242,5 +309,26 @@ float CObj::RayIntersectTestWithBB( const Utl::SRay& t_ray ) {
 
 void CObj::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
     if( !_selected ) return;
-    _arcball.RayIntersectTestWithArcball( t_ray, t_isStart );
+    glm::mat3 rotMat;
+    if( _arcball.RayIntersectTestWithArcball( t_ray, t_isStart, rotMat ) )
+    {
+        // rotate along model axis
+        float theta = 30 * Utl::g_o2Pi;
+        float sintheta = sin( theta );
+        float costheta = cos( theta );
+        glm::mat3 rotMatx(   vec3( 1.f, 0.f, 0.f ), 
+                        vec3( 0.f, costheta, sintheta ),
+                        vec3( 0.f, -sintheta, costheta ) );
+
+        float phi = 10 * Utl::g_o2Pi;
+        float sinphi = sin( phi );
+        float cosphi = cos( phi );
+        glm::mat3 rotMaty(   vec3( cosphi, 0.f, -sinphi ), 
+            vec3( 0.f, 1.f, 0.f ),
+            vec3( sinphi, 0.f, cosphi ) );
+
+        rotMat = rotMatx * rotMaty;
+
+        RotateAroundLocalAxis( rotMat );
+    }
 }

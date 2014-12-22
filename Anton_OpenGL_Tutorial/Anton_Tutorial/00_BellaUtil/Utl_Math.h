@@ -11,12 +11,12 @@
 #define GLM_FORCE_RADIANS
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/quaternion.hpp"
 #include "Utl_Global.h"
 
 using glm::vec4;
 using glm::vec3;
 using glm::mat4;
-
 
 namespace Utl { 
 
@@ -41,6 +41,7 @@ struct SRay {
 
     vec4 GetPointOnRay( const float& t_Scale ) const { return _Origin + t_Scale * _Dir; }
     SRay Transform( const mat4& t_TransMat ) const { return SRay( t_TransMat * _Origin, t_TransMat * _Dir ); }
+    SRay Translate( const vec3& t_offset ) const { return SRay( vec4( t_offset, 0.f ) + _Origin, _Dir ); }
     SRay GetRefletedRay ( const vec4& t_InstPoint, const vec4& t_SurfaceNormal ) const {
         vec4 RflRayDir;
         vec4 NormalizedNormal = glm::normalize( t_SurfaceNormal );

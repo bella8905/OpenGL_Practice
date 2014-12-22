@@ -333,11 +333,11 @@ void TW_CALL _getWireModeCB(  void* t_value, void* t_clientData ) {
 
 // arcball 
 void TW_CALL _setArcballCB(  const void* t_value, void* t_clientData ) {
-    CObj::_arcball_drawAcball = *(bool*)t_value;
+    CObj::_drawAcball = *(bool*)t_value;
 }
 
 void TW_CALL _getArcballCB(  void* t_value, void* t_clientData ) {
-    *(bool*)t_value = CObj::_arcball_drawAcball;
+    *(bool*)t_value = CObj::_drawAcball;
 }
 
 void TW_CALL _setArcballRadiusCB(  const void* t_value, void* t_clientData ) {
@@ -486,28 +486,30 @@ int main()
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
     // geos
-
-    mat4 left = Utl::GetModelMatFromTfms( vec3( -0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-    mat4 center = Utl::GetModelMatFromTfms( vec3( 0, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.3f, 0.3f, 0.3f ) );
-    mat4 right = Utl::GetModelMatFromTfms( vec3( 0.8f, 0.f, 0.f ), vec3( 0.f, 0.f, 0.f ), vec3( 0.1f, 0.1f, 0.1f ) );
+    vec3 translate_left( -0.8f, 0.f, 0.f );
+    vec3 translate_center( 0.f, 0.f, 0.f );
+    vec3 translate_right( 0.8f, 0.f, 0.f );
+    glm::mat3 rot_noRot( 1.f );
+    float scale_s = 0.3f;
+    float scale_xs = 0.1f;
 
     // cube 
     CObj obj_cube( GEO_UNIT_CUBE );
-    obj_cube.SetModelMat( left );
+    obj_cube.SetupModelMatrix( translate_left, rot_noRot, scale_s );
     obj_cube._drawBB = true;
     obj_cube._shaderType = SD_NORMAL_TEST;
     g_scene.AddObj( obj_cube );
 
     CObj obj_sphere( GEO_UNIT_SPHERE  );
     // obj_sphere._material = blinnMat;
-    obj_sphere.SetModelMat( right );
+    obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
     obj_sphere._shaderType = SD_PHONG;
     obj_sphere._drawBB = true;
     g_scene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_TRIANGLE );
-    obj_spider.SetModelMat( center );
+    obj_spider.SetupModelMatrix( translate_center, rot_noRot, scale_s );
     obj_spider._shaderType = SD_NORMAL_TEST;
     obj_spider._drawBB = true;
     g_scene.AddObj( obj_spider );
