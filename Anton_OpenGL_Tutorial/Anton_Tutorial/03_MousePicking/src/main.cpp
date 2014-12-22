@@ -387,6 +387,7 @@ void _deinitModules() {
 
 int main()
 {
+
     glfwSetErrorCallback( _glfwErrorCallback );
 
     if( !glfwInit() ) {
@@ -490,7 +491,7 @@ int main()
     vec3 translate_center( 0.f, 0.f, 0.f );
     vec3 translate_right( 0.8f, 0.f, 0.f );
     glm::mat3 rot_noRot( 1.f );
-    float scale_s = 0.3f;
+    float scale_s = 0.8f;
     float scale_xs = 0.1f;
 
     // cube 

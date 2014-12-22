@@ -1,5 +1,6 @@
 #include <algorithm>
 #include "Object.h"
+#include "glm/gtx/transform.hpp"
 
 bool CObj::_drawBB = true;
 bool CObj::_drawAcball = true;
@@ -98,27 +99,19 @@ bool SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& 
     else t = tmax;
 
     bool rtn;
-    vec3 InstPoint =  vec3( ProjRay.GetPointOnRay( t ) );
+    vec3 instPointWorld =  vec3( ProjRay.GetPointOnRay( t ) );
 
     us vertexIndex = 0;
     if( t_isStart ) {
-        _rotStartPoint = InstPoint;
+        _rotStartPoint = instPointWorld;
         _rotEndPoint = _rotStartPoint;
         _isInRot = true;
         rtn = false;
     }
     else {
-        _rotEndPoint = InstPoint;
+        _rotEndPoint = _rotStartPoint;
+        _rotStartPoint = instPointWorld;
         rtn = true;
-
-        // calculate rot matrix
-        vec3 startSide =  glm::normalize( _rotStartPoint - _center );
-        vec3 endSide =  glm::normalize( _rotEndPoint - _center );
-        vec3 rotAxis = glm::cross( startSide, endSide );
-        float angle = acos( glm::dot( startSide, endSide ) );
-        glm::quat rotQuat = glm::angleAxis( angle, rotAxis );
-        t_rotMat = glm::toMat3( rotQuat );
-
     }
 
     // update our buffer data here instead of the drawing process
@@ -305,30 +298,59 @@ float CObj::RayIntersectTestWithBB( const Utl::SRay& t_ray ) {
 }
 
 
+void ValidateRotationMat( const glm::mat3& t_rot ) {
 
+    vec3 x = t_rot[0];
+    vec3 y = t_rot[1];
+    vec3 z = t_rot[2];
+
+
+    for( us i = 0; i < 3; ++i ) {
+        assert( Utl::Equals( glm::dot( t_rot[i], t_rot[i] ), 1.f ) );
+    }
+
+    assert( Utl::Equals( glm::dot( x, y ), 0.f  ) );
+    assert( Utl::Equals( glm::dot( x, z ), 0.f  ) );
+}
 
 void CObj::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
     if( !_selected ) return;
     glm::mat3 rotMat;
     if( _arcball.RayIntersectTestWithArcball( t_ray, t_isStart, rotMat ) )
     {
-        // rotate along model axis
-        float theta = 30 * Utl::g_o2Pi;
-        float sintheta = sin( theta );
-        float costheta = cos( theta );
-        glm::mat3 rotMatx(   vec3( 1.f, 0.f, 0.f ), 
-                        vec3( 0.f, costheta, sintheta ),
-                        vec3( 0.f, -sintheta, costheta ) );
 
-        float phi = 10 * Utl::g_o2Pi;
-        float sinphi = sin( phi );
-        float cosphi = cos( phi );
-        glm::mat3 rotMaty(   vec3( cosphi, 0.f, -sinphi ), 
-            vec3( 0.f, 1.f, 0.f ),
-            vec3( sinphi, 0.f, cosphi ) );
+        vec4 startPointObj = _invModelMat * vec4( _arcball._rotStartPoint, 1.f );
+        vec4 endPointObj = _invModelMat * vec4( _arcball._rotEndPoint, 1.f );
+            // calculate rot matrix
+        vec3 startSide =  glm::normalize( vec3( startPointObj ) );
+        vec3 endSide =  glm::normalize( vec3( endPointObj ) );
+        vec3 rotAxis = glm::cross( startSide, endSide );
+        float rotAngle = -acos( glm::dot( startSide, endSide ) );
+        _modelMat= glm::rotate( _modelMat, rotAngle, rotAxis );
+        _invModelMat = glm::inverse( _modelMat );
+        // glm::quat rotQuat = glm::angleAxis( rotAngle, rotAxis );
+        //         glm::quat nor_rotQuat = glm::normalize( rotQuat );
+        //         // assert( Utl::Equals( glm::dot( nor_rotQuat, nor_rotQuat ), 1.f ) );
+        //rotMat = glm::toMat3( rotQuat );
 
-        rotMat = rotMatx * rotMaty;
 
-        RotateAroundLocalAxis( rotMat );
+//         // rotate along model axis
+//         float theta = 30 * Utl::g_o2Pi;
+//         float sintheta = sin( theta );
+//         float costheta = cos( theta );
+//         glm::mat3 rotMatx(   vec3( 1.f, 0.f, 0.f ), 
+//                         vec3( 0.f, costheta, sintheta ),
+//                         vec3( 0.f, -sintheta, costheta ) );
+// 
+//         float phi = 10 * Utl::g_o2Pi;
+//         float sinphi = sin( phi );
+//         float cosphi = cos( phi );
+//         glm::mat3 rotMaty(   vec3( cosphi, 0.f, -sinphi ), 
+//             vec3( 0.f, 1.f, 0.f ),
+//             vec3( sinphi, 0.f, cosphi ) );
+// 
+//         rotMat = rotMatx * rotMaty;
+        // ValidateRotationMat( rotMat );
+        // RotateAroundLocalAxis( rotMat );
     }
 }
