@@ -16,6 +16,7 @@
 #include "Material.h"
 #include "Geometry.h"
 #include "Shader.h"
+#include "glm/gtx/transform.hpp"
 
 struct SArcball {
     vec3 _center;   // center of the obj, caled by center of bb and model matrix
@@ -80,7 +81,14 @@ public:
     void DrawObj();  
     void RotateAroundLocalAxis( const glm::mat3& t_rot );
     // void SetModelMat( const mat4& t_modelMat );
-    void SetupModelMatrix( const vec3& t_translate, const glm::mat3 t_rot, const float& t_scale );
+    void SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, const float& t_scale );
+    void SetupModelMatrix( const vec3& t_translate, const glm::mat4& t_rot, const float& t_scale ) {
+        glm::mat3 rot;
+        rot[0] = vec3( t_rot[0] );
+        rot[1] = vec3( t_rot[1] );
+        rot[2] = vec3( t_rot[2] );
+        SetupModelMatrix( t_translate, rot, t_scale );
+    }
 
     // test if bb is hit by ray, and return the dist from ray origin to hit point
     float RayIntersectTestWithBB( const Utl::SRay& t_ray );
@@ -88,5 +96,20 @@ public:
 
     // void StartRot() { _arcball._isInRot = true; }
     void EndRot() { _arcball._isInRot = false; }
+
+    void Scale( const float& t_scale ) {
+        _modelMat = glm::scale( _modelMat, vec3( t_scale) );
+        _invModelMat = glm::inverse( _modelMat );
+    }
+
+    void Translate( const vec3& t_translate ) {
+        _modelMat = glm::translate( _modelMat, t_translate );
+        _invModelMat = glm::inverse( _modelMat );
+    }
+
+    void Rotate( const float& t_angle, const vec3& t_axis ) {
+        _modelMat = glm::rotate_slow( _modelMat, t_angle, t_axis );
+        _invModelMat = glm::inverse( _modelMat );
+    }
 };
 

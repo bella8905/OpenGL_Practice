@@ -20,6 +20,7 @@
 #include "Scene.h"
 #include "stb_image/stb_image_write.h"
 #include "assimp/scene.h"
+#include "glm/gtx/transform.hpp"
 
 
 #include <GL/AntTweakBar.h>
@@ -385,6 +386,14 @@ void _deinitModules() {
 
 }
 
+void update()
+{
+    bool test = false;
+    if( test ) {
+        g_scene._objects[0].Rotate( 30 * Utl::g_o2Pi, vec3( 1.f, 0.f, 0.f ) );
+    }
+}
+
 int main()
 {
 
@@ -491,12 +500,13 @@ int main()
     vec3 translate_center( 0.f, 0.f, 0.f );
     vec3 translate_right( 0.8f, 0.f, 0.f );
     glm::mat3 rot_noRot( 1.f );
-    float scale_s = 0.8f;
+    mat4 rot_x30 = glm::rotate(glm::mat4(), 30 * Utl::g_o2Pi, glm::vec3(1,0,0) );
+    float scale_s = 0.5f;
     float scale_xs = 0.1f;
 
     // cube 
     CObj obj_cube( GEO_UNIT_CUBE );
-    obj_cube.SetupModelMatrix( translate_left, rot_noRot, scale_s );
+    obj_cube.SetupModelMatrix( translate_center, rot_x30, scale_s );
     obj_cube._drawBB = true;
     obj_cube._shaderType = SD_NORMAL_TEST;
     g_scene.AddObj( obj_cube );
@@ -506,14 +516,14 @@ int main()
     obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
     obj_sphere._shaderType = SD_PHONG;
     obj_sphere._drawBB = true;
-    g_scene.AddObj( obj_sphere );
+    // g_scene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_TRIANGLE );
     obj_spider.SetupModelMatrix( translate_center, rot_noRot, scale_s );
     obj_spider._shaderType = SD_NORMAL_TEST;
     obj_spider._drawBB = true;
-    g_scene.AddObj( obj_spider );
+    // g_scene.AddObj( obj_spider );
     
 
     // init scenes
@@ -569,6 +579,9 @@ int main()
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
         _updateFPSCounter( window );
+
+        update(); 
+
         glClearColor( 0.5f, 0.5f, 0.5f, 1.f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 

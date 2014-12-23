@@ -212,7 +212,7 @@ void CObj::resetModelMatrix() {
     _invModelMat = inv_scaleMat * inv_rotMat * inv_translateMat;
 }
 
-void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3 t_rot, const float& t_scale ) {
+void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, const float& t_scale ) {
     _translate = t_translate;
     _rot = t_rot;
     _scale = t_scale;
