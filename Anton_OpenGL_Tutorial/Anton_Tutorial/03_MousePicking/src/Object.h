@@ -107,8 +107,10 @@ public:
         _invModelMat = glm::inverse( _modelMat );
     }
 
+    // rotate with axis and angle
+    // http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
     void Rotate( const float& t_angle, const vec3& t_axis ) {
-        _modelMat = glm::rotate_slow( _modelMat, t_angle, t_axis );
+        _modelMat = glm::rotate( _modelMat, t_angle, t_axis );
         _invModelMat = glm::inverse( _modelMat );
     }
 };
