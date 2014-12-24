@@ -162,6 +162,10 @@ void _gui_mouseButtonCallback( GLFWwindow* t_window, int t_btn, int t_action, in
         // if we select a different obj, stop rot obj
     }
 
+    // middle btn to revert model matrix
+    if( t_action == GLFW_PRESS && t_btn == GLFW_MOUSE_BUTTON_MIDDLE ) {
+        g_scene.RevertSelectedObj();
+    }
 
     _gui_onMouseClicked( t_btn, t_action );
 }
@@ -386,11 +390,34 @@ void _deinitModules() {
 
 }
 
-void update()
+void update( GLFWwindow* t_window )
 {
-    bool test = false;
-    if( test ) {
-        g_scene._objects[0].Rotate( 30 * Utl::g_o2Pi, vec3( 1.f, 0.f, 0.f ) );
+    _updateFPSCounter( t_window );
+
+
+    bool isTest = false;
+    if( isTest ) {
+        static float angle_degree = 60;
+        static vec3 axis_unnormailzed( 1.f, 1.f, 0.f );
+        
+        float angle = angle_degree * Utl::g_o2Pi;
+        vec3 axis = glm::normalize( axis_unnormailzed );
+        mat3 rot_matrix = Utl::ToMat3( glm::rotate( mat4(1.f), angle, axis ) );
+
+        // use quaternion
+        glm::quat rotQuat = glm::angleAxis( angle, axis );
+        mat3 rot_quat = glm::toMat3( rotQuat ); 
+
+        bool isTestMatrix = true;
+        if( isTestMatrix ) {
+            g_scene._objects[0].SetRot( rot_matrix );
+        }
+        else 
+        {
+            g_scene._objects[0].SetRot( rot_quat );
+        }
+
+        cout<<endl;
     }
 }
 
@@ -516,14 +543,14 @@ int main()
     obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
     obj_sphere._shaderType = SD_PHONG;
     obj_sphere._drawBB = true;
-    g_scene.AddObj( obj_sphere );
+    // g_scene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_TRIANGLE );
     obj_spider.SetupModelMatrix( translate_center, rot_noRot, scale_s );
     obj_spider._shaderType = SD_NORMAL_TEST;
     obj_spider._drawBB = true;
-    g_scene.AddObj( obj_spider );
+    // g_scene.AddObj( obj_spider );
     
 
     // init scenes
@@ -578,9 +605,8 @@ int main()
 
     // update and draw!
     while ( !glfwWindowShouldClose( window ) ) {
-        _updateFPSCounter( window );
 
-        update(); 
+        update( window ); 
 
         glClearColor( 0.5f, 0.5f, 0.5f, 1.f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );

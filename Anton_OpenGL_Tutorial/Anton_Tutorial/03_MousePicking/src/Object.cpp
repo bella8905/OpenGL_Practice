@@ -65,7 +65,7 @@ void SArcball::DeinitArcball() {
 
 
 // ray sphere intersect
-bool SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart, glm::mat3& t_rotMat ) {
+bool SArcball::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
 
     // no need to do any transformation. we use the center position and radius of arcball
     Utl::SRay ProjRay = t_ray;
@@ -168,16 +168,6 @@ CObj::~CObj()
 {
 }
 
-// 
-// void CObj::SetModelMat( const mat4& t_modelMat ) {
-//     _modelMat = t_modelMat; 
-//     _invModelMat = glm::inverse( _modelMat ); 
-//     // set arcball center
-//     SBoundBox* sphereGeoBB = CGeoContainer::GetInstance().GetGeoBB( GEO_UNIT_SPHERE );
-//     assert( sphereGeoBB );
-//     _arcball._center = vec3( t_modelMat * vec4( sphereGeoBB->_center, 1.f ) );
-// }
-
 void CObj::resetModelMatrix() {
     mat4 scaleMat = mat4(   vec4( _scale, 0.f,    0.f,    0.f ), 
         vec4( 0.f,    _scale, 0.f,    0.f ), 
@@ -210,6 +200,9 @@ void CObj::resetModelMatrix() {
     mat4 inv_rotMat = glm::transpose( rotMat );
 
     _invModelMat = inv_scaleMat * inv_rotMat * inv_translateMat;
+
+    // set arcball center to the center of object
+    _arcball._center = _translate;
 }
 
 void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, const float& t_scale ) {
@@ -218,9 +211,6 @@ void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, co
     _scale = t_scale;
 
     resetModelMatrix();
-
-    // set arcball center to the center of object
-    _arcball._center = _translate;
 }
 
 void CObj::DrawObj() {
@@ -231,10 +221,6 @@ void CObj::DrawObj() {
     }
 }
 
-void CObj::RotateAroundLocalAxis( const glm::mat3& t_rot ) {
-    _rot = t_rot * _rot;
-    resetModelMatrix();
-}
 
 
 // ray box intersect
@@ -315,15 +301,21 @@ void ValidateRotationMat( const glm::mat3& t_rot ) {
 
 void CObj::RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart ) {
     if( !_selected ) return;
-    glm::mat3 rotMat;
-    if( _arcball.RayIntersectTestWithArcball( t_ray, t_isStart, rotMat ) )
+    if( _arcball.RayIntersectTestWithArcball( t_ray, t_isStart ) )
     {
         vec3 startSide =  glm::normalize( _arcball._rotStartPoint - _arcball._center );
         vec3 endSide =  glm::normalize( _arcball._rotEndPoint - _arcball._center );
-        vec3 rotAxis = glm::cross( startSide, endSide );
+        vec3 rotAxis = glm::normalize(glm::cross( startSide, endSide ) );
         float rotAngle = -acos( glm::dot( startSide, endSide ) ) * 2;
-        mat4 rot = glm::rotate( mat4(1.f), rotAngle, rotAxis );
-        _rot =  glm::mat3( vec3(rot[0]),  vec3(rot[1]), vec3(rot[2] ) ) * _rot ;
+//         // rotate with axis and angle
+//         // http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
+//         mat3 rot_matrix = Utl::ToMat3( glm::rotate( mat4(1.f), rotAngle, rotAxis ) );
+
+        // use quaternion
+        glm::quat rotQuat = glm::angleAxis( rotAngle, rotAxis );
+        mat3 rot_quat = glm::toMat3( rotQuat ); 
+
+        _rot =  rot_quat * _rot ;
         resetModelMatrix();
     }
 }

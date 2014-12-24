@@ -40,7 +40,7 @@ struct SArcball {
     static void DeinitArcball();
 
     // if we have rotated model with arcball and return the rotation matrix
-    bool RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart, glm::mat3& t_rotMat );
+    bool RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart );
     void DrawArcball();
 
 };
@@ -79,8 +79,6 @@ protected:
 
 public:
     void DrawObj();  
-    void RotateAroundLocalAxis( const glm::mat3& t_rot );
-    // void SetModelMat( const mat4& t_modelMat );
     void SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, const float& t_scale );
     void SetupModelMatrix( const vec3& t_translate, const glm::mat4& t_rot, const float& t_scale ) {
         glm::mat3 rot;
@@ -90,6 +88,20 @@ public:
         SetupModelMatrix( t_translate, rot, t_scale );
     }
 
+    void RevertModelMatrix() {
+        _rot = mat3( 1.f );
+        _translate = vec3( 0.f );
+        _scale = 1.f;
+
+        resetModelMatrix();
+    }
+
+
+    void SetRot( const mat3& t_rot ) {
+        _rot = t_rot;
+        resetModelMatrix();
+    } 
+
     // test if bb is hit by ray, and return the dist from ray origin to hit point
     float RayIntersectTestWithBB( const Utl::SRay& t_ray );
     void RayIntersectTestWithArcball( const Utl::SRay& t_ray, const bool& t_isStart );
@@ -97,21 +109,5 @@ public:
     // void StartRot() { _arcball._isInRot = true; }
     void EndRot() { _arcball._isInRot = false; }
 
-    void Scale( const float& t_scale ) {
-        _modelMat = glm::scale( _modelMat, vec3( t_scale) );
-        _invModelMat = glm::inverse( _modelMat );
-    }
-
-    void Translate( const vec3& t_translate ) {
-        _modelMat = glm::translate( _modelMat, t_translate );
-        _invModelMat = glm::inverse( _modelMat );
-    }
-
-    // rotate with axis and angle
-    // http://inside.mines.edu/fs_home/gmurray/ArbitraryAxisRotation/
-    void Rotate( const float& t_angle, const vec3& t_axis ) {
-        _modelMat = glm::rotate( _modelMat, t_angle, t_axis );
-        _invModelMat = glm::inverse( _modelMat );
-    }
 };
 

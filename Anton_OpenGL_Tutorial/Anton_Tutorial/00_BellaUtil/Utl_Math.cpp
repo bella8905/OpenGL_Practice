@@ -53,4 +53,20 @@ bool ArePerpendicular( const vec4& t_v1, const vec4& t_v2 )
     return Equals( glm::dot( t_v1, t_v2  ), 0.f );
 }
 
+mat4 ToMat4( const mat3& t_rot ) {
+    mat4 rot(   vec4( t_rot[0], 0.f ),
+                vec4( t_rot[1], 0.f ),
+                vec4( t_rot[2], 0.f ),
+                vec4( 0.f, 0.f, 0.f, 1.f) );
+    return rot;
+}
+
+mat3 ToMat3(  const mat4& t_mat ) {
+    mat3 rot = mat3(   vec3( t_mat[0] ),
+                       vec3( t_mat[1] ),
+                       vec3( t_mat[2] ) );
+    return rot;
+
+}
+
 }

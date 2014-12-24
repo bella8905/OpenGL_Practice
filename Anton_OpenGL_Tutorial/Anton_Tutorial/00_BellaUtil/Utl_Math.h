@@ -17,6 +17,7 @@
 using glm::vec4;
 using glm::vec3;
 using glm::mat4;
+using glm::mat3;
 
 namespace Utl { 
 
@@ -29,6 +30,8 @@ extern mat4 GetModelMatFromTfms( const vec3& t_Trans, const vec3& t_Rotat, const
 extern bool SamePoints( const vec3& t_p1, const vec3& t_p2 );
 extern bool AreParallel( const vec4& t_v1, const vec4& t_v2 );
 extern bool ArePerpendicular(  const vec4& t_v1, const vec4& t_v2 );
+extern mat4 ToMat4( const glm::mat3& t_mat );
+extern glm::mat3 ToMat3( const mat4& t_mat );
 
 // ray intersection
 struct SRay {
