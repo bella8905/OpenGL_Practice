@@ -481,13 +481,6 @@ int main()
     // log context info
     _logGLParams();
 
-
-    glEnable( GL_DEPTH_TEST );
-    glDepthFunc( GL_LESS );
-    glEnable(GL_POLYGON_OFFSET_FILL);
-
-    glPointSize( 3.f );
-
     _initModules();
     ////////////////////////////////////////////////////////
     // init scenes
@@ -522,7 +515,7 @@ int main()
 
     CMaterial blinnMat( kd, hasSpecular, ks, specularExp, ka );
 
-    // geos
+    // geosd
     vec3 translate_left( -0.8f, 0.f, 0.f );
     vec3 translate_center( 0.f, 0.f, 0.f );
     vec3 translate_right( 0.8f, 0.f, 0.f );
@@ -535,15 +528,15 @@ int main()
     CObj obj_cube( GEO_UNIT_CUBE );
     obj_cube.SetupModelMatrix( translate_left, rot_x30, scale_s );
     obj_cube._drawBB = true;
-    obj_cube._shaderType = SD_NORMAL_TEST;
+    obj_cube._shaderType = SD_PHONG;
     g_scene.AddObj( obj_cube );
 
-    CObj obj_sphere( GEO_UNIT_SPHERE  );
+    CObj obj_sphere( GEO_SPHERE  );
     // obj_sphere._material = blinnMat;
-    obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_xs );
+    obj_sphere.SetupModelMatrix( translate_right, rot_noRot, scale_s );
     obj_sphere._shaderType = SD_PHONG;
     obj_sphere._drawBB = true;
-    // g_scene.AddObj( obj_sphere );
+    g_scene.AddObj( obj_sphere );
 
 
     CObj obj_spider( GEO_TRIANGLE );
@@ -599,6 +592,12 @@ int main()
 
     // _printSPInfo( sp );
 
+    glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LESS );
+
+    glEnable( GL_STENCIL_TEST );
+
+    glPointSize( 10.f );
     glCullFace( GL_BACK );
     glFrontFace( GL_CCW );
 
@@ -609,10 +608,12 @@ int main()
         update( window ); 
 
         glClearColor( 0.5f, 0.5f, 0.5f, 1.f );
-        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        glClearStencil( 0 );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT );
+
+
 
         glViewport( 0, 0, g_winWidth, g_winHeight );
-
 
         g_scene.DrawScene();
 

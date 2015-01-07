@@ -283,7 +283,7 @@ void CShader::initSP( const std::string& t_vs, const std::string& t_fs, const st
 //////////////////////////////////////////////////////////
 // a simple perspective camera shader
 
-CPerspCamShader::CPerspCamShader() :  _camera( 0 ), _vertexColor( vec4( 0.0f, 0.0f, 0.0f, 1.0f ) )
+CPerspCamShader::CPerspCamShader() :  _camera( 0 ), _vertexColor( vec4( 1.0f, 0.0f, 0.0f, 1.0f ) )
 {
     // initSP( PERSP_CAM_SHADER_VS_FILE, PERSP_CAM_SHADER_FS_FILE );
 }

@@ -214,7 +214,34 @@ void CObj::SetupModelMatrix( const vec3& t_translate, const glm::mat3& t_rot, co
 }
 
 void CObj::DrawObj() {
+    // silhouette
+    GLint polygonMode;
+    glGetIntegerv( GL_POLYGON_MODE, &polygonMode );
+
+    glEnable(GL_POLYGON_OFFSET_FILL);
+    static float line_offset_slope = 1.f;
+    static float line_offset_unit = 0.f;
+    glPolygonOffset( line_offset_slope, line_offset_unit );
+
+//     glStencilFunc( GL_ALWAYS, 1, -1 );
+//     glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
+//     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
     CGeoContainer::GetInstance().DrawGeo( _geoType, _shaderType, &_material, _modelMat, _selected && _drawBB );
+
+    glDisable( GL_POLYGON_OFFSET_FILL );  
+    // render the thick wire frame 
+    // glStencilFunc( GL_NOTEQUAL, 1, -1 );
+    // glStencilOp( GL_KEEP, GL_KEEP, GL_REPLACE );
+
+    // WE CANT CHANGE THE LINE WEIGHT, SO PULL THE LINE OUT A LITTLE
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+
+    CGeoContainer::GetInstance().DrawGeo( _geoType, SD_SINGLE_COLOR, &_material, _modelMat, _selected && _drawBB );
+
+    glPolygonMode( GL_FRONT_AND_BACK, polygonMode );
+
 
     if( _selected &&_drawAcball  ) {
         _arcball.DrawArcball();
